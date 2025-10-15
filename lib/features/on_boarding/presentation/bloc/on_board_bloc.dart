@@ -1,13 +1,17 @@
-import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
 
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 part 'on_board_event.dart';
 part 'on_board_state.dart';
 
-class OnBoardBloc extends Bloc<OnBoardEvent, OnBoardState> {
-  OnBoardBloc() : super(OnBoardInitial()) {
-    on<OnBoardEvent>((event, emit) {
-      // TODO: implement event handler
+class OnBoardBloc extends Bloc<OnBoardEvent,IndexState>{
+
+  OnBoardBloc() : super(IndexState(0)){
+
+    on<UpdateIndex>((event, emit) {
+      final updatedIndex = event.index;
+      emit(IndexState(updatedIndex));
     });
   }
 }
