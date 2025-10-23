@@ -22,13 +22,13 @@ class OnBoardingPage extends StatelessWidget {
           const SizedBox(height: 40),
           Text(
             onBoardingModel.title,
-            style: AppTexts.titleTextStyle,
+            style: AppTextStyles.font32White700W,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           Text(
             onBoardingModel.description,
-            style: AppTexts.descriptionTextStyle,
+            style: AppTextStyles.font16White400W,
             textAlign: TextAlign.center,
           ),
         ],

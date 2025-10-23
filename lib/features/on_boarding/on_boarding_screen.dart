@@ -2,9 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:to_do/core/style/colors/app_colors.dart';
+import 'package:to_do/core/style/text/app_texts.dart';
 import 'package:to_do/features/on_boarding/presentation/bloc/on_board_bloc.dart';
 import 'package:to_do/features/on_boarding/presentation/models/on_boarding_model.dart';
 import 'package:to_do/features/on_boarding/presentation/widgets/on_boarding_page.dart';
@@ -65,10 +65,7 @@ class OnBoardingScreen extends StatelessWidget {
                       },
                       child: Text(
                         'SKIP',
-                        style: GoogleFonts.lato(
-                          color: AppColors.weakGray,
-                          fontSize: 18,
-                        ),
+                        style: AppTextStyles.font16GrayW400,
                       ),
                     ),
                     Spacer()
@@ -110,10 +107,7 @@ class OnBoardingScreen extends StatelessWidget {
                       },
                       child: Text(
                         'BACK',
-                        style: GoogleFonts.lato(
-                          color: AppColors.weakGray,
-                          fontSize: 18,
-                        ),
+                        style: AppTextStyles.font16GrayW400,
                       ),
                     ),
                     Spacer(),
@@ -139,7 +133,7 @@ class OnBoardingScreen extends StatelessWidget {
                             SizedBox(width: 24),
                             Text(
                               currentIndex == 2 ? 'GET STARTED' : 'NEXT',
-                              style: TextStyle(color: Colors.white),
+                              style: AppTextStyles.font16White400W,
                             ),
                             SizedBox(width: 24),
                           ],

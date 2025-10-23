@@ -1,33 +1,33 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:to_do/core/routing/AppRouter.dart';
-import 'core/style/colors/app_colors.dart';
+import 'package:to_do/core/routing/app_router.dart';
 
-void main() {
-
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      routerConfig: AppRouter.router,
-      theme: ThemeData(
-        appBarTheme: AppBarTheme(
-          backgroundColor: AppColors.nearBlack,
-          systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: AppColors.nearBlack,
-            statusBarIconBrightness: Brightness.light,
-            statusBarBrightness: Brightness.dark, // For iOS
-          ),
+    return  AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        routerConfig: AppRouter.router,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         ),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
     );
   }
