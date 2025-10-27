@@ -1,4 +1,3 @@
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:to_do/core/routing/routes.dart';
@@ -8,8 +7,9 @@ import 'package:to_do/features/login/presentation/bloc/login_bloc.dart';
 import 'package:to_do/features/login/presentation/login_screen.dart';
 import 'package:to_do/features/on_boarding/on_boarding_screen.dart';
 import 'package:to_do/features/on_boarding/presentation/bloc/on_board_bloc.dart';
-import 'package:to_do/features/register/presentation/register.dart';
+import 'package:to_do/features/register/presentation/register_screen.dart';
 import 'package:to_do/features/welcome/presentation/welcome_screen.dart';
+import '../../features/register/presentation/bloc/register_bloc.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 
 class AppRouter {
@@ -54,7 +54,10 @@ class AppRouter {
       GoRoute(
         path: Routes.register,
         builder: (context, state) =>
-            RegisterScreen(),
+            BlocProvider(
+              create: (context) => RegisterBloc(),
+              child: RegisterScreen(),
+            ),
       ),
     ],
   );
