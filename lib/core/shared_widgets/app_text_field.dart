@@ -117,39 +117,42 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (widget.label != null)
-        FormLabel(text: widget.label!),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _controller,
-          validator:
-          widget.validator ??
-                  (value) => ValidatorHelper.validateUsername(value ?? ''),
-          keyboardType: widget.keyboardType ?? TextInputType.text,
-          obscureText: widget.isPassword && _obscureText,
-          maxLines: widget.maxLines,
-          style: AppTextStyles.font16White400W,
-          onChanged: widget.onChanged,
-          onEditingComplete: widget.onEditingComplete,
-          onTapOutside: (_) => FocusScope.of(context).unfocus(),
-          decoration: InputDecoration(
-            hintText: widget.hintText ?? 'Enter text',
-            errorMaxLines: widget.errorMaxLines,
-            fillColor: AppColors.jetBlack,
-            filled: true,
-            prefixIcon: widget.prefixIcon,
-            suffixIcon: _buildSuffixIcon(),
-            border: _buildBorder(AppColors.weakGray),
-            enabledBorder: _buildBorder(AppColors.weakGray),
-            focusedBorder: _buildBorder(AppColors.lavenderPurple),
-            errorBorder: _buildBorder(Colors.red),
-            focusedErrorBorder: _buildBorder(Colors.red),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.label != null)
+          FormLabel(text: widget.label!),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _controller,
+            validator:
+            widget.validator ??
+                    (value) => ValidatorHelper.validateUsername(value ?? ''),
+            keyboardType: widget.keyboardType ?? TextInputType.text,
+            obscureText: widget.isPassword && _obscureText,
+            maxLines: widget.maxLines,
+            style: AppTextStyles.font16White400W,
+            onChanged: widget.onChanged,
+            onEditingComplete: widget.onEditingComplete,
+            onTapOutside: (_) => FocusScope.of(context).unfocus(),
+            decoration: InputDecoration(
+              hintText: widget.hintText ?? 'Enter text',
+              errorMaxLines: widget.errorMaxLines,
+              fillColor: AppColors.jetBlack,
+              filled: true,
+              prefixIcon: widget.prefixIcon,
+              suffixIcon: _buildSuffixIcon(),
+              border: _buildBorder(AppColors.weakGray),
+              enabledBorder: _buildBorder(AppColors.weakGray),
+              focusedBorder: _buildBorder(AppColors.lavenderPurple),
+              errorBorder: _buildBorder(Colors.red),
+              focusedErrorBorder: _buildBorder(Colors.red),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -7,28 +6,26 @@ import 'package:to_do/core/shared_widgets/app_text_field.dart';
 import 'package:to_do/core/routing/routes.dart';
 import 'package:to_do/core/style/colors/app_colors.dart';
 import 'package:to_do/core/validators/validator_helper.dart';
-import 'package:to_do/features/login/presentation/bloc/login_bloc.dart';
+import 'package:to_do/features/register/presentation/bloc/register_bloc.dart';
 import '../../../core/shared_widgets/app_button.dart';
 import '../../../core/shared_widgets/app_logo.dart';
 import '../../../core/shared_widgets/custom_back_button.dart';
 import '../../../core/shared_widgets/loading_overlay.dart';
 import '../../../core/shared_widgets/social_login_button.dart';
 import '../../../core/shared_widgets/text_with_link.dart';
-import '../../../core/style/text/app_texts.dart';
 import '../../../generated/assets.dart';
-import '../finger_print/finger_print.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-
+class _RegisterScreenState extends State<RegisterScreen> {
   late final TextEditingController _usernameController;
   late final TextEditingController _passwordController;
+  late final TextEditingController _confirmPasswordController;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -36,37 +33,36 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     _usernameController = TextEditingController();
     _passwordController = TextEditingController();
+    _confirmPasswordController = TextEditingController();
   }
 
   @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<LoginBloc, LoginState>(
-      listener: (BuildContext context, LoginState state) {
-
-        if (state.loginSuccess) {
+    return BlocConsumer<RegisterBloc, RegisterState>(
+      listener: (BuildContext context, RegisterState state) {
+        if (state.registerSuccess) {
           context.replace(Routes.home);
-          context.read<LoginBloc>().add(LoginReset());
+          context.read<RegisterBloc>().add(RegisterReset());
         }
 
-        if (state.loginError != null) {
+        if (state.registerError != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.loginError!),
+              content: Text(state.registerError!),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
             ),
           );
-
-          context.read<LoginBloc>().add(ClearLoginError());
+          context.read<RegisterBloc>().add(ClearRegisterError());
         }
-
       },
       builder: (context, state) {
         return Scaffold(
@@ -107,22 +103,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: !state.isPasswordVisible,
                       ),
                       const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: 16,
-                        ),
-                        child: Row(
-                          children: [
-                            const Spacer(),
-                            GestureDetector(
-                              onTap: () => context.push(Routes.forgetPassword),
-                              child: Text(
-                                "Forget Password ?",
-                                style: AppTextStyles.font16GrayW400,
-                              ),
-                            ),
-                          ],
-                        ),
+                      AppTextField(
+                        label: "Confirm Password",
+                        controller: _confirmPasswordController,
+                        hintText: "Repeat your password",
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please confirm your password';
+                          }
+                          if (value != _passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                        isPassword: true,
+                        keyboardType: TextInputType.visiblePassword,
+                        obscureText: !state.isConfirmPasswordVisible,
                       ),
                       const SizedBox(height: 20),
                       Padding(
@@ -133,15 +129,23 @@ class _LoginScreenState extends State<LoginScreen> {
                           listenable: Listenable.merge([
                             _usernameController,
                             _passwordController,
+                            _confirmPasswordController,
                           ]),
                           builder: (context, _) {
                             return AppButton(
-                              text: 'Login',
-                                onPressed: () {
-                                  if (_formKey.currentState!.validate() && !state.isLoading) {
-                                    context.read<LoginBloc>().add(LoginSubmitted(_usernameController.text, _passwordController.text));
-                                  }
+                              text: 'Register',
+                              onPressed: () {
+                                if (_formKey.currentState!.validate() &&
+                                    !state.isLoading) {
+                                  context.read<RegisterBloc>().add(
+                                    RegisterSubmitted(
+                                      _usernameController.text,
+                                      _passwordController.text,
+                                      _confirmPasswordController.text,
+                                    ),
+                                  );
                                 }
+                              },
                             );
                           },
                         ),
@@ -155,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: SocialLoginButton(
                           iconAsset: Assets.svgsGoogle,
-                          text: 'Login with Google',
+                          text: 'Register with Google',
                           onPressed: () {
                             // TODO: Implement Google Sign In
                           },
@@ -168,23 +172,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: SocialLoginButton(
                           iconAsset: Assets.svgsFacebook,
-                          text: 'Login with Facebook',
+                          text: 'Register with Facebook',
                           onPressed: () {
                             // TODO: Implement Facebook Sign In
                           },
                         ),
                       ),
                       const SizedBox(height: 24),
-                      if (state.biometricAvailable)
-                        const Center(
-                          child: FingerPrint(),
-                        ),
-                      if (state.biometricAvailable) const SizedBox(height: 16),
                       Center(
                         child: TextWithLink(
-                          normalText: "Don't have an account? ",
-                          linkText: "Register",
-                          onLinkTap: () => context.push(Routes.register),
+                          normalText: "Already have an account? ",
+                          linkText: "Login",
+                          onLinkTap: () => context.pop(),
                         ),
                       ),
                       const SizedBox(height: 8),

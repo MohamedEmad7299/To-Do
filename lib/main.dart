@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:to_do/core/routing/app_router.dart';
+import 'core/style/colors/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,10 +17,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return  AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
+      value: const  SystemUiOverlayStyle(
+        statusBarColor: AppColors.nearBlack,
         statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.light,
+        systemNavigationBarColor: AppColors.nearBlack,
+        systemNavigationBarIconBrightness: Brightness.light,
       ),
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

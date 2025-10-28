@@ -10,15 +10,18 @@ class FingerPrint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return BlocBuilder<LoginBloc, LoginState>(
+
       builder: (context, state) {
+
         final bloc = context.read<LoginBloc>();
 
         return SizedBox(
           width: 60,
           height: 60,
           child: InkWell(
-            onTap: state.isLoading || !state.biometricAvailable
+            onTap: !state.biometricAvailable
                 ? null
                 : () {
               bloc.add(BiometricAuthenticationRequested());

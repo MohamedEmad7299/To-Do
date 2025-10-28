@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:local_auth/local_auth.dart';
@@ -6,16 +5,11 @@ import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_ios/types/auth_messages_ios.dart';
 
 part 'login_event.dart';
+
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-
-  final LocalAuthentication _auth;
-
-  LoginBloc({LocalAuthentication? auth})
-    : _auth = auth ?? LocalAuthentication(),
-      super(const LoginState()) {
-
+  LoginBloc({LocalAuthentication? auth}) : super(const LoginState()) {
     on<CheckBiometricAvailability>((event, emit) async {
       await _checkBiometricAvailability(emit);
     });
@@ -36,17 +30,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       emit(const LoginState());
     });
 
-    on<ClearLoginError>((event, emit) {
-      emit(state.copyWith(loginError: null));
-    });
-
-
     add(CheckBiometricAvailability());
   }
 
   Future<void> _checkBiometricAvailability(Emitter<LoginState> emit) async {
     try {
-      final available = await _auth.canCheckBiometrics;
+      final available = await LocalAuthentication().canCheckBiometrics;
       emit(state.copyWith(biometricAvailable: available));
     } catch (e) {
       emit(
@@ -59,6 +48,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   Future<void> _handleBiometricAuthentication(Emitter<LoginState> emit) async {
+
     if (!state.biometricAvailable) {
       emit(
         state.copyWith(loginError: 'Biometric authentication not available'),
@@ -66,11 +56,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       return;
     }
 
-    emit(state.copyWith(isLoading: true, loginError: null));
+    emit(state.copyWith(loginError: null));
 
     try {
-      final authenticated = await _auth.authenticate(
+      final authenticated = await LocalAuthentication().authenticate(
         localizedReason: 'Please authenticate to access your account',
+        persistAcrossBackgrounding: false,
         authMessages: const <AuthMessages>[
           AndroidAuthMessages(
             signInTitle: 'Biometric authentication required',
@@ -81,39 +72,27 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       );
 
       if (authenticated) {
-        emit(
-          state.copyWith(
-            isLoading: false,
-            loginSuccess: true,
-            loginError: null,
-          ),
-        );
+        emit(state.copyWith(loginSuccess: true, loginError: null));
       } else {
-        emit(
-          state.copyWith(
-            isLoading: false,
-            loginError: 'Authentication failed',
-          ),
-        );
+        emit(state.copyWith(loginError: 'Authentication failed'));
+        await LocalAuthentication().stopAuthentication();
       }
     } catch (e) {
-      emit(
-        state.copyWith(
-          isLoading: false,
-          loginError: 'Authentication error: ${e.toString()}',
-        ),
-      );
+      debugPrint(e.toString());
     }
   }
 
   void _togglePasswordVisibility(
-      PasswordVisibilityChanged event,
-      Emitter<LoginState> emit,
-      ) {
+    PasswordVisibilityChanged event,
+    Emitter<LoginState> emit,
+  ) {
     emit(state.copyWith(isPasswordVisible: !event.isPasswordVisible));
   }
 
-  Future<void> _handleLoginSubmission(LoginSubmitted event, Emitter<LoginState> emit,) async {
+  Future<void> _handleLoginSubmission(
+    LoginSubmitted event,
+    Emitter<LoginState> emit,
+  ) async {
     emit(
       state.copyWith(
         isLoading: true,

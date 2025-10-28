@@ -29,4 +29,10 @@ class AppTextStyles {
     fontWeight: FontWeight.w700,
     color: AppColors.lavenderPurple,
   );
+
+  static final TextStyle font32LavenderPurpleW500 = GoogleFonts.lato(
+    fontSize: 32,
+    fontWeight: FontWeight.w500,
+    color: AppColors.lavenderPurple,
+  );
 }
