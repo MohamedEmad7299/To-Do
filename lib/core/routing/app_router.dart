@@ -5,7 +5,7 @@ import 'package:to_do/features/forget_password/presentation/forget_password.dart
 import 'package:to_do/features/home/presentation/home_screen.dart';
 import 'package:to_do/features/login/presentation/bloc/login_bloc.dart';
 import 'package:to_do/features/login/presentation/login_screen.dart';
-import 'package:to_do/features/on_boarding/on_boarding_screen.dart';
+import 'package:to_do/features/on_boarding/onboarding_screen.dart';
 import 'package:to_do/features/on_boarding/presentation/bloc/on_board_bloc.dart';
 import 'package:to_do/features/register/presentation/register_screen.dart';
 import 'package:to_do/features/welcome/presentation/welcome_screen.dart';
@@ -14,7 +14,7 @@ import '../../features/splash/presentation/splash_screen.dart';
 
 class AppRouter {
   static final router = GoRouter(
-    initialLocation: Routes.login,
+    initialLocation: Routes.onBoarding,
     routes: [
       GoRoute(
         path: Routes.splash,
@@ -25,8 +25,8 @@ class AppRouter {
         path: Routes.onBoarding,
         builder: (context, state) =>
             BlocProvider(
-              create: (context) => OnBoardBloc(),
-              child: OnBoardingScreen(),
+              create: (context) => OnboardingBloc(totalPages: 3),
+              child: OnboardingScreen(),
             ),
       ),
       GoRoute(

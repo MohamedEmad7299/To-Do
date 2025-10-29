@@ -35,4 +35,19 @@ class AppTextStyles {
     fontWeight: FontWeight.w500,
     color: AppColors.lavenderPurple,
   );
+
+  static final TextStyle font12White = GoogleFonts.lato(
+    fontSize: 12,
+    color: Colors.white
+  );
+
+  static final TextStyle font20White = GoogleFonts.lato(
+      fontSize: 20,
+      color: Colors.white
+  );
+
+  static final TextStyle font16White = GoogleFonts.lato(
+      fontSize: 16,
+      color: Colors.white
+  );
 }

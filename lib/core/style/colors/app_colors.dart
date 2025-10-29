@@ -29,4 +29,5 @@ class AppColors {
   static const weakGray = Color(0x70FFFFFF);
   static const jetBlack = Color(0xFF1D1D1D);
   static const ashGray = Color(0xFF979797);
+  static const Onyx = Color(0xFF363636);
 }

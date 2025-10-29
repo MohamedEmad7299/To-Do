@@ -5,9 +5,14 @@ class Assets {
   static const String svgsBoard1 = 'assets/svgs/board1.svg';
   static const String svgsBoard2 = 'assets/svgs/board2.svg';
   static const String svgsBoard3 = 'assets/svgs/board3.svg';
+  static const String svgsCalendar = 'assets/svgs/calendar.svg';
+  static const String svgsClock = 'assets/svgs/clock.svg';
+  static const String svgsEmptyPlaceholder = 'assets/svgs/empty_placeholder.svg';
   static const String svgsFacebook = 'assets/svgs/facebook.svg';
   static const String svgsGoogle = 'assets/svgs/google.svg';
+  static const String svgsHome = 'assets/svgs/home.svg';
   static const String svgsOrDiv = 'assets/svgs/or_div.svg';
   static const String svgsSplash = 'assets/svgs/splash.svg';
+  static const String svgsUser = 'assets/svgs/user.svg';
 
 }
