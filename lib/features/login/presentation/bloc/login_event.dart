@@ -23,4 +23,4 @@ final class LoginReset extends LoginEvent {}
 
 final class ClearLoginError extends LoginEvent {}
 
-class BiometricAuthenticationCancelled extends LoginEvent {}
+final class BiometricAuthenticationCancelled extends LoginEvent {}

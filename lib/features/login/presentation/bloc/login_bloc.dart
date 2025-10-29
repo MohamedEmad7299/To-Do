@@ -9,7 +9,14 @@ part 'login_event.dart';
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  LoginBloc({LocalAuthentication? auth}) : super(const LoginState()) {
+  // Internal state tracking
+  String _username = '';
+  String _password = '';
+  bool _isLoading = false;
+  bool _isPasswordVisible = false;
+  bool _biometricAvailable = false;
+
+  LoginBloc({LocalAuthentication? auth}) : super(LoginInitial()) {
     on<CheckBiometricAvailability>((event, emit) async {
       await _checkBiometricAvailability(emit);
     });
@@ -27,7 +34,15 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     });
 
     on<LoginReset>((event, emit) {
-      emit(const LoginState());
+      _resetLogin(emit);
+    });
+
+    on<ClearLoginError>((event, emit) {
+      emit(LoginErrorCleared());
+    });
+
+    on<BiometricAuthenticationCancelled>((event, emit) {
+      emit(LoginErrorState('Authentication Cancelled'));
     });
 
     add(CheckBiometricAvailability());
@@ -36,27 +51,29 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   Future<void> _checkBiometricAvailability(Emitter<LoginState> emit) async {
     try {
       final available = await LocalAuthentication().canCheckBiometrics;
-      emit(state.copyWith(biometricAvailable: available));
+      _biometricAvailable = available;
+
+      if (available) {
+        emit(BiometricAvailable());
+      } else {
+        emit(BiometricNotAvailable());
+      }
     } catch (e) {
-      emit(
-        state.copyWith(
-          biometricAvailable: false,
-          loginError: 'Failed to check biometric availability',
-        ),
-      );
+      _biometricAvailable = false;
+      emit(BiometricNotAvailable());
+      emit(LoginErrorState('Failed to check biometric availability'));
     }
   }
 
   Future<void> _handleBiometricAuthentication(Emitter<LoginState> emit) async {
-
-    if (!state.biometricAvailable) {
-      emit(
-        state.copyWith(loginError: 'Biometric authentication not available'),
-      );
+    if (!_biometricAvailable) {
+      emit(LoginErrorState('Biometric authentication not available'));
       return;
     }
 
-    emit(state.copyWith(loginError: null));
+    emit(LoginErrorCleared());
+    emit(LoginLoading());
+    _isLoading = true;
 
     try {
       final authenticated = await LocalAuthentication().authenticate(
@@ -71,14 +88,20 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         ],
       );
 
+      _isLoading = false;
+      emit(LoginNotLoading());
+
       if (authenticated) {
-        emit(state.copyWith(loginSuccess: true, loginError: null));
+        emit(LoginSuccessState());
       } else {
-        emit(state.copyWith(loginError: 'Authentication failed'));
+        emit(LoginErrorState('Authentication failed'));
         await LocalAuthentication().stopAuthentication();
       }
     } catch (e) {
       debugPrint(e.toString());
+      _isLoading = false;
+      emit(LoginNotLoading());
+      emit(LoginErrorState('Authentication cancelled'));
     }
   }
 
@@ -86,32 +109,53 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     PasswordVisibilityChanged event,
     Emitter<LoginState> emit,
   ) {
-    emit(state.copyWith(isPasswordVisible: !event.isPasswordVisible));
+    _isPasswordVisible = !event.isPasswordVisible;
+
+    if (_isPasswordVisible) {
+      emit(PasswordVisible());
+    } else {
+      emit(PasswordHidden());
+    }
   }
 
   Future<void> _handleLoginSubmission(
     LoginSubmitted event,
     Emitter<LoginState> emit,
   ) async {
-    emit(
-      state.copyWith(
-        isLoading: true,
-        username: event.username,
-        password: event.password,
-      ),
-    );
+    _username = event.username;
+    _password = event.password;
+    _isLoading = true;
+
+    emit(UsernameChanged(_username));
+    emit(PasswordChanged(_password));
+    emit(LoginLoading());
 
     try {
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 100));
 
-      emit(state.copyWith(isLoading: false, loginSuccess: true));
+      _isLoading = false;
+      emit(LoginNotLoading());
+      emit(LoginSuccessState());
     } catch (e) {
-      emit(
-        state.copyWith(
-          isLoading: false,
-          loginError: 'Login failed. Please check your credentials.',
-        ),
-      );
+      _isLoading = false;
+      emit(LoginNotLoading());
+      emit(LoginErrorState('Login failed. Please check your credentials.'));
     }
   }
+
+  void _resetLogin(Emitter<LoginState> emit) {
+    _username = '';
+    _password = '';
+    _isLoading = false;
+    _isPasswordVisible = false;
+
+    emit(LoginInitial());
+  }
+
+  // Getters for internal state
+  bool get isLoading => _isLoading;
+
+  bool get isPasswordVisible => _isPasswordVisible;
+
+  bool get biometricAvailable => _biometricAvailable;
 }

@@ -1,43 +1,45 @@
 part of 'login_bloc.dart';
 
 @immutable
-class LoginState {
+sealed class LoginState {}
 
+// Initial state
+final class LoginInitial extends LoginState {}
+
+// Username state
+final class UsernameChanged extends LoginState {
   final String username;
-  final String password;
-  final bool isLoading;
-  final bool isPasswordVisible;
-  final bool loginSuccess;
-  final String? loginError;
-  final bool biometricAvailable;
-
-  const LoginState({
-    this.username = '',
-    this.password = '',
-    this.isLoading = false,
-    this.isPasswordVisible = false,
-    this.loginSuccess = false,
-    this.loginError,
-    this.biometricAvailable = false,
-  });
-
-  LoginState copyWith({
-    String? username,
-    String? password,
-    bool? isLoading,
-    bool? isPasswordVisible,
-    bool? loginSuccess,
-    String? loginError,
-    bool? biometricAvailable,
-  }) {
-    return LoginState(
-      username: username ?? this.username,
-      password: password ?? this.password,
-      isLoading: isLoading ?? this.isLoading,
-      isPasswordVisible: isPasswordVisible ?? this.isPasswordVisible,
-      loginSuccess: loginSuccess ?? this.loginSuccess,
-      loginError: loginError ?? this.loginError,
-      biometricAvailable: biometricAvailable ?? this.biometricAvailable,
-    );
-  }
+  UsernameChanged(this.username);
 }
+
+// Password state
+final class PasswordChanged extends LoginState {
+  final String password;
+  PasswordChanged(this.password);
+}
+
+// Loading state
+final class LoginLoading extends LoginState {}
+
+final class LoginNotLoading extends LoginState {}
+
+// Password visibility state
+final class PasswordVisible extends LoginState {}
+
+final class PasswordHidden extends LoginState {}
+
+// Login success state
+final class LoginSuccessState extends LoginState {}
+
+// Login error state
+final class LoginErrorState extends LoginState {
+  final String error;
+  LoginErrorState(this.error);
+}
+
+final class LoginErrorCleared extends LoginState {}
+
+// Biometric availability state
+final class BiometricAvailable extends LoginState {}
+
+final class BiometricNotAvailable extends LoginState {}

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -47,18 +46,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<LoginBloc, LoginState>(
-      listener: (BuildContext context, LoginState state) {
+    final loginBloc = context.read<LoginBloc>();
 
-        if (state.loginSuccess) {
+    return BlocListener<LoginBloc, LoginState>(
+      listener: (BuildContext context, LoginState state) {
+        if (state is LoginSuccessState) {
           context.replace(Routes.home);
           context.read<LoginBloc>().add(LoginReset());
         }
 
-        if (state.loginError != null) {
+        if (state is LoginErrorState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.loginError!),
+              content: Text(state.error),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
             ),
@@ -66,137 +66,172 @@ class _LoginScreenState extends State<LoginScreen> {
 
           context.read<LoginBloc>().add(ClearLoginError());
         }
-
       },
-      builder: (context, state) {
-        return Scaffold(
-          resizeToAvoidBottomInset: false,
-          backgroundColor: AppColors.nearBlack,
-          body: Stack(
-            children: [
-              SingleChildScrollView(
-                keyboardDismissBehavior:
-                ScrollViewKeyboardDismissBehavior.onDrag,
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 48),
-                      const CustomBackButton(),
-                      const SizedBox(height: 16),
-                      const AppLogo(),
-                      const SizedBox(height: 16),
-                      AppTextField(
-                        label: "Username",
-                        controller: _usernameController,
-                        validator: (value) =>
-                            ValidatorHelper.validateUsername(value),
-                        keyboardType: TextInputType.emailAddress,
-                        hintText: "Enter your username",
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: AppColors.nearBlack,
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              keyboardDismissBehavior:
+              ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 48),
+                    const CustomBackButton(),
+                    const SizedBox(height: 16),
+                    const AppLogo(),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      label: "Username",
+                      controller: _usernameController,
+                      validator: (value) =>
+                          ValidatorHelper.validateUsername(value),
+                      keyboardType: TextInputType.emailAddress,
+                      hintText: "Enter your username",
+                    ),
+                    const SizedBox(height: 8),
+                    BlocBuilder<LoginBloc, LoginState>(
+                      buildWhen: (previous, current) =>
+                      current is PasswordVisible ||
+                          current is PasswordHidden,
+                      builder: (context, state) {
+                        return AppTextField(
+                          label: "Password",
+                          controller: _passwordController,
+                          hintText: "Enter your password",
+                          validator: (value) =>
+                              ValidatorHelper.validatePassword(value),
+                          isPassword: true,
+                          keyboardType: TextInputType.visiblePassword,
+                          obscureText: !loginBloc.isPasswordVisible,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                        horizontal: 16,
                       ),
-                      const SizedBox(height: 8),
-                      AppTextField(
-                        label: "Password",
-                        controller: _passwordController,
-                        hintText: "Enter your password",
-                        validator: (value) =>
-                            ValidatorHelper.validatePassword(value),
-                        isPassword: true,
-                        keyboardType: TextInputType.visiblePassword,
-                        obscureText: !state.isPasswordVisible,
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: 16,
-                        ),
-                        child: Row(
-                          children: [
-                            const Spacer(),
-                            GestureDetector(
-                              onTap: () => context.push(Routes.forgetPassword),
-                              child: Text(
-                                "Forget Password ?",
-                                style: AppTextStyles.font16GrayW400,
-                              ),
+                      child: Row(
+                        children: [
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () => context.push(Routes.forgetPassword),
+                            child: Text(
+                              "Forget Password ?",
+                              style: AppTextStyles.font16GrayW400,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: 16,
-                        ),
-                        child: ListenableBuilder(
-                          listenable: Listenable.merge([
-                            _usernameController,
-                            _passwordController,
-                          ]),
-                          builder: (context, _) {
-                            return AppButton(
-                              text: 'Login',
-                                onPressed: () {
-                                  if (_formKey.currentState!.validate() && !state.isLoading) {
-                                    context.read<LoginBloc>().add(LoginSubmitted(_usernameController.text, _passwordController.text));
-                                  }
-                                }
-                            );
-                          },
-                        ),
+                    ),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                        horizontal: 16,
                       ),
-                      const SizedBox(height: 16),
-                      Center(child: SvgPicture.asset(Assets.svgsOrDiv)),
-                      const SizedBox(height: 16),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: 16,
-                        ),
-                        child: SocialLoginButton(
-                          iconAsset: Assets.svgsGoogle,
-                          text: 'Login with Google',
-                          onPressed: () {
-                            // TODO: Implement Google Sign In
-                          },
-                        ),
+                      child: ListenableBuilder(
+                        listenable: Listenable.merge([
+                          _usernameController,
+                          _passwordController,
+                        ]),
+                        builder: (context, _) {
+                          return AppButton(
+                            text: 'Login',
+                            onPressed: () {
+                              if (_formKey.currentState!.validate() &&
+                                  !loginBloc.isLoading) {
+                                context.read<LoginBloc>().add(
+                                  LoginSubmitted(
+                                    _usernameController.text,
+                                    _passwordController.text,
+                                  ),
+                                );
+                              }
+                            },
+                          );
+                        },
                       ),
-                      const SizedBox(height: 16),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: 16,
-                        ),
-                        child: SocialLoginButton(
-                          iconAsset: Assets.svgsFacebook,
-                          text: 'Login with Facebook',
-                          onPressed: () {
-                            // TODO: Implement Facebook Sign In
-                          },
-                        ),
+                    ),
+                    const SizedBox(height: 16),
+                    Center(child: SvgPicture.asset(Assets.svgsOrDiv)),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                        horizontal: 16,
                       ),
-                      const SizedBox(height: 24),
-                      if (state.biometricAvailable)
-                        const Center(
-                          child: FingerPrint(),
-                        ),
-                      if (state.biometricAvailable) const SizedBox(height: 16),
-                      Center(
-                        child: TextWithLink(
-                          normalText: "Don't have an account? ",
-                          linkText: "Register",
-                          onLinkTap: () => context.push(Routes.register),
-                        ),
+                      child: SocialLoginButton(
+                        iconAsset: Assets.svgsGoogle,
+                        text: 'Login with Google',
+                        onPressed: () {
+                          // TODO: Implement Google Sign In
+                        },
                       ),
-                      const SizedBox(height: 8),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                        horizontal: 16,
+                      ),
+                      child: SocialLoginButton(
+                        iconAsset: Assets.svgsFacebook,
+                        text: 'Login with Facebook',
+                        onPressed: () {
+                          // TODO: Implement Facebook Sign In
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    BlocBuilder<LoginBloc, LoginState>(
+                      buildWhen: (previous, current) =>
+                      current is BiometricAvailable ||
+                          current is BiometricNotAvailable,
+                      builder: (context, state) {
+                        if (loginBloc.biometricAvailable) {
+                          return const Center(
+                            child: FingerPrint(),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    BlocBuilder<LoginBloc, LoginState>(
+                      buildWhen: (previous, current) =>
+                      current is BiometricAvailable ||
+                          current is BiometricNotAvailable,
+                      builder: (context, state) {
+                        if (loginBloc.biometricAvailable) {
+                          return const SizedBox(height: 16);
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    Center(
+                      child: TextWithLink(
+                        normalText: "Don't have an account? ",
+                        linkText: "Register",
+                        onLinkTap: () => context.push(Routes.register),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
               ),
-              LoadingOverlay(isLoading: state.isLoading),
-            ],
-          ),
-        );
-      },
+            ),
+            BlocBuilder<LoginBloc, LoginState>(
+              buildWhen: (previous, current) =>
+              current is LoginLoading || current is LoginNotLoading,
+              builder: (context, state) {
+                return LoadingOverlay(isLoading: loginBloc.isLoading);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
