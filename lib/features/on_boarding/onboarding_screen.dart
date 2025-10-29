@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:to_do/features/on_boarding/presentation/bloc/on_board_bloc.dart';
-import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_Indicators.dart';
+import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_indicators.dart';
 import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_content.dart';
 import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_controls.dart';
 import '../../core/routing/routes.dart';
