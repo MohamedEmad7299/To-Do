@@ -1,13 +1,32 @@
 part of 'on_board_bloc.dart';
 
-@immutable
-sealed class OnBoardState {}
+class OnboardingState extends Equatable {
+  final int currentPage;
+  final int totalPages;
+  final bool shouldNavigateToWelcome;
 
-final class IndexState extends OnBoardState {
+  const OnboardingState({
+    required this.currentPage,
+    required this.totalPages,
+    this.shouldNavigateToWelcome = false,
+  });
 
-  final int index;
+  bool get isFirstPage => currentPage == 0;
+  bool get isLastPage => currentPage == totalPages - 1;
 
-  IndexState(this.index);
+  OnboardingState copyWith({
+    int? currentPage,
+    int? totalPages,
+    bool? shouldNavigateToWelcome,
+  }) {
+    return OnboardingState(
+      currentPage: currentPage ?? this.currentPage,
+      totalPages: totalPages ?? this.totalPages,
+      shouldNavigateToWelcome: shouldNavigateToWelcome ?? false,
+    );
+  }
 
+  @override
+  List<Object?> get props => [currentPage, totalPages, shouldNavigateToWelcome];
 }
 

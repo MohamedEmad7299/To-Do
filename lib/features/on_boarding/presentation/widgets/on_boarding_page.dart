@@ -1,36 +1,44 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:to_do/core/style/text/app_texts.dart';
+
 import '../models/on_boarding_model.dart';
 
-class OnBoardingPage extends StatelessWidget {
-  final OnBoardingModel onBoardingModel;
+class OnboardingPage extends StatelessWidget {
+  final OnboardingPageModel model;
 
-  const OnBoardingPage({super.key, required this.onBoardingModel});
+  const OnboardingPage({
+    super.key,
+    required this.model,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      width: double.infinity,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 50),
-          SvgPicture.asset(onBoardingModel.image),
-          const SizedBox(height: 40),
+          Flexible(
+            flex: 3,
+            child: SvgPicture.asset(
+              model.image,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 48),
           Text(
-            onBoardingModel.title,
+            model.title,
             style: AppTextStyles.font32White700W,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           Text(
-            onBoardingModel.description,
+            model.description,
             style: AppTextStyles.font16White400W,
             textAlign: TextAlign.center,
           ),
+          const Spacer(),
         ],
       ),
     );

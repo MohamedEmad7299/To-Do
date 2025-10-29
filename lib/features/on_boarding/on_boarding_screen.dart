@@ -2,151 +2,130 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:to_do/core/style/colors/app_colors.dart';
-import 'package:to_do/core/style/text/app_texts.dart';
 import 'package:to_do/features/on_boarding/presentation/bloc/on_board_bloc.dart';
-import 'package:to_do/features/on_boarding/presentation/models/on_boarding_model.dart';
-import 'package:to_do/features/on_boarding/presentation/widgets/on_boarding_page.dart';
+import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_Indicators.dart';
+import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_content.dart';
+import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_controls.dart';
+
 import '../../core/routing/routes.dart';
-import '../../generated/assets.dart';
+import '../../core/style/colors/app_colors.dart';
+import '../../core/style/text/app_texts.dart';
+import 'data/onboarding_data.dart';
 
-class OnBoardingScreen extends StatelessWidget {
-
-  final PageController boardController = PageController();
-
-  final List<OnBoardingModel> boardings = [
-    OnBoardingModel(
-      image: Assets.svgsBoard1,
-      title: 'Manage your tasks',
-      description:
-      'You can easily manage all of your daily tasks in DoMe for free',
-    ),
-    OnBoardingModel(
-      image: Assets.svgsBoard2,
-      title: 'Create daily routine',
-      description:
-      'In ToDo  you can create your personalized routine to stay productive',
-    ),
-    OnBoardingModel(
-      image: Assets.svgsBoard3,
-      title: 'Orgonaize your tasks',
-      description:
-      'You can organize your daily tasks by adding your tasks into separate categories',
-    ),
-  ];
-
-  OnBoardingScreen({super.key});
+class OnboardingScreen extends StatelessWidget {
+  const OnboardingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => OnboardingBloc(totalPages: OnboardingData.pages.length),
+      child: const _OnboardingView(),
+    );
+  }
+}
 
-    return BlocBuilder<OnBoardBloc,IndexState>(
+class _OnboardingView extends StatefulWidget {
+  const _OnboardingView();
 
-      builder: (BuildContext context, state) {
+  @override
+  State<_OnboardingView> createState() => _OnboardingViewState();
+}
 
-        OnBoardBloc bloc = context.read<OnBoardBloc>();
+class _OnboardingViewState extends State<_OnboardingView> {
+  late final PageController _pageController;
 
-        var currentIndex = state.index;
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
 
-        return Scaffold(
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onPageChanged(int index) {
+    context.read<OnboardingBloc>().add(OnboardingPageChanged(index));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<OnboardingBloc, OnboardingState>(
+      listenWhen: (previous, current) =>
+      previous.shouldNavigateToWelcome != current.shouldNavigateToWelcome,
+      listener: (context, state) {
+        if (state.shouldNavigateToWelcome) {
+          context.replace(Routes.welcome);
+        }
+      },
+      child: BlocListener<OnboardingBloc, OnboardingState>(
+        listenWhen: (previous, current) =>
+        previous.currentPage != current.currentPage,
+        listener: (context, state) {
+          _pageController.animateToPage(
+            state.currentPage,
+            duration: const Duration(milliseconds: 1),
+            curve: Curves.easeInOut,
+          );
+        },
+        child: Scaffold(
           backgroundColor: AppColors.nearBlack,
-          body: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: 32,),
-                Row(
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        context.replace(Routes.welcome);
-                      },
-                      child: Text(
-                        'SKIP',
-                        style: AppTextStyles.font16GrayW400,
-                      ),
-                    ),
-                    Spacer()
-                  ]
-                ),
-                SizedBox(height: 20),
-                Expanded(
-                  child: PageView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    onPageChanged: (index) { bloc.add(UpdateIndex(index)); },
-                    controller: boardController,
-                    itemBuilder: (context, index) {
-                      return OnBoardingPage(onBoardingModel: boardings[index]);
-                    },
-                    itemCount: boardings.length,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  _SkipButton(
+                    onSkip: () => context
+                        .read<OnboardingBloc>()
+                        .add(const OnboardingSkipPressed()),
                   ),
-                ),
-                SmoothPageIndicator(
-                  effect: ExpandingDotsEffect(
-                    dotColor: Colors.grey,
-                    activeDotColor: Colors.white,
-                    dotHeight: 8,
-                    dotWidth: 8,
+                  const SizedBox(height: 20),
+                  Expanded(
+                    child: OnboardingContent(
+                      pageController: _pageController,
+                      pages: OnboardingData.pages,
+                      onPageChanged: _onPageChanged,
+                    ),
                   ),
-                  controller: boardController,
-                  count: boardings.length,
-                ),
-                SizedBox(height: 72,),
-                Row(
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        if (currentIndex > 0){
-                          boardController.previousPage(
-                            duration: Duration(milliseconds: 300),
-                            curve: Curves.easeIn,
-                          );
-                        }
-                      },
-                      child: Text(
-                        'BACK',
-                        style: AppTextStyles.font16GrayW400,
-                      ),
-                    ),
-                    Spacer(),
-                    GestureDetector(
-                      onTap: () {
-                        if (currentIndex == 2) {
-                          context.replace(Routes.welcome);
-                        } else {
-                          boardController.nextPage(
-                            duration: Duration(milliseconds: 100),
-                            curve: Curves.easeInOut,
-                          );
-                        }
-                      },
-                      child: Container(
-                        height: 48,
-                        decoration: BoxDecoration(
-                            color: AppColors.lavenderPurple,
-                            borderRadius: BorderRadius.all(Radius.circular(4))
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(width: 24),
-                            Text(
-                              currentIndex == 2 ? 'GET STARTED' : 'NEXT',
-                              style: AppTextStyles.font16White400W,
-                            ),
-                            SizedBox(width: 24),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  OnboardingIndicators(
+                    controller: _pageController,
+                    count: OnboardingData.pages.length,
+                  ),
+                  const SizedBox(height: 48),
+                  const OnboardingControls(),
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
-        );
-      },
+        ),
+      ),
+    );
+  }
+}
+
+class _SkipButton extends StatelessWidget {
+
+  final VoidCallback onSkip;
+
+  const _SkipButton({required this.onSkip});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton(
+        onPressed: onSkip,
+        child: Text(
+          'SKIP',
+          style: AppTextStyles.font16GrayW400,
+        ),
+      ),
     );
   }
 }

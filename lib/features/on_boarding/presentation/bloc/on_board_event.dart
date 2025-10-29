@@ -1,11 +1,30 @@
 part of 'on_board_bloc.dart';
 
-@immutable
-sealed class OnBoardEvent {}
 
-class UpdateIndex extends OnBoardEvent {
+class OnboardingEvent extends Equatable {
+  const OnboardingEvent();
 
-  final int index;
+  @override
+  List<Object?> get props => [];
+}
 
-  UpdateIndex(this.index);
+class OnboardingPageChanged extends OnboardingEvent {
+  final int pageIndex;
+
+  const OnboardingPageChanged(this.pageIndex);
+
+  @override
+  List<Object?> get props => [pageIndex];
+}
+
+class OnboardingNextPressed extends OnboardingEvent {
+  const OnboardingNextPressed();
+}
+
+class OnboardingBackPressed extends OnboardingEvent {
+  const OnboardingBackPressed();
+}
+
+class OnboardingSkipPressed extends OnboardingEvent {
+  const OnboardingSkipPressed();
 }
