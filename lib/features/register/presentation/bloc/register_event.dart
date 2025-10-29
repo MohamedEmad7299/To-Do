@@ -3,15 +3,9 @@ part of 'register_bloc.dart';
 @immutable
 sealed class RegisterEvent {}
 
-final class PasswordVisibilityChanged extends RegisterEvent {
-  final bool isPasswordVisible;
-  PasswordVisibilityChanged(this.isPasswordVisible);
-}
+final class PasswordVisibilityToggled extends RegisterEvent {}
 
-final class ConfirmPasswordVisibilityChanged extends RegisterEvent {
-  final bool isConfirmPasswordVisible;
-  ConfirmPasswordVisibilityChanged(this.isConfirmPasswordVisible);
-}
+final class ConfirmPasswordVisibilityToggled extends RegisterEvent {}
 
 final class RegisterSubmitted extends RegisterEvent {
   final String username;

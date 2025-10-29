@@ -1,42 +1,46 @@
-import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
+
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'register_event.dart';
 part 'register_state.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
-
-  RegisterBloc() : super(const RegisterState()) {
-    on<PasswordVisibilityChanged>(_onPasswordVisibilityChanged);
-    on<ConfirmPasswordVisibilityChanged>(_onConfirmPasswordVisibilityChanged);
+  RegisterBloc() : super(RegisterInitial()) {
+    on<PasswordVisibilityToggled>(_onPasswordVisibilityToggled);
+    on<ConfirmPasswordVisibilityToggled>(_onConfirmPasswordVisibilityToggled);
     on<RegisterSubmitted>(_onRegisterSubmitted);
     on<RegisterReset>(_onRegisterReset);
     on<ClearRegisterError>(_onClearRegisterError);
   }
 
-  void _onPasswordVisibilityChanged(
-      PasswordVisibilityChanged event,
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+
+  void _onPasswordVisibilityToggled(
+      PasswordVisibilityToggled event,
       Emitter<RegisterState> emit,
       ) {
-    emit(state.copyWith(isPasswordVisible: event.isPasswordVisible));
+    _isPasswordVisible = !_isPasswordVisible;
+    emit(_isPasswordVisible ? PasswordVisible() : PasswordHidden());
   }
 
-  void _onConfirmPasswordVisibilityChanged(
-      ConfirmPasswordVisibilityChanged event,
+  void _onConfirmPasswordVisibilityToggled(
+      ConfirmPasswordVisibilityToggled event,
       Emitter<RegisterState> emit,
       ) {
-    emit(state.copyWith(
-        isConfirmPasswordVisible: event.isConfirmPasswordVisible));
+    _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+    emit(_isConfirmPasswordVisible
+        ? ConfirmPasswordVisible()
+        : ConfirmPasswordHidden());
   }
 
   Future<void> _onRegisterSubmitted(
       RegisterSubmitted event,
       Emitter<RegisterState> emit,
       ) async {
-    emit(state.copyWith(
-      isLoading: true,
-      registerError: null,
-    ));
+    emit(RegisterLoading());
 
     try {
       // TODO: Implement your registration logic here
@@ -50,18 +54,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       await Future.delayed(const Duration(seconds: 2));
 
       // Simulate success
-      emit(state.copyWith(
-        isLoading: false,
-        registerSuccess: true,
-        username: event.username,
-        password: event.password,
-        confirmPassword: event.confirmPassword,
-      ));
+      emit(RegisterSuccess());
     } catch (e) {
-      emit(state.copyWith(
-        isLoading: false,
-        registerError: e.toString(),
-      ));
+      emit(RegisterError(e.toString()));
     }
   }
 
@@ -69,13 +64,18 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       RegisterReset event,
       Emitter<RegisterState> emit,
       ) {
-    emit(const RegisterState());
+    _isPasswordVisible = false;
+    _isConfirmPasswordVisible = false;
+    emit(RegisterInitial());
   }
 
   void _onClearRegisterError(
       ClearRegisterError event,
       Emitter<RegisterState> emit,
       ) {
-    emit(state.copyWith(registerError: null));
+    emit(RegisterErrorCleared());
   }
+
+  bool get isPasswordVisible => _isPasswordVisible;
+  bool get isConfirmPasswordVisible => _isConfirmPasswordVisible;
 }

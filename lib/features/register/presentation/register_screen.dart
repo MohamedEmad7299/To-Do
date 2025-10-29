@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -46,156 +47,188 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<RegisterBloc, RegisterState>(
+    final bloc = context.read<RegisterBloc>();
+
+    return BlocListener<RegisterBloc, RegisterState>(
       listener: (BuildContext context, RegisterState state) {
-        if (state.registerSuccess) {
+        if (state is RegisterSuccess) {
           context.replace(Routes.home);
-          context.read<RegisterBloc>().add(RegisterReset());
+          bloc.add(RegisterReset());
         }
 
-        if (state.registerError != null) {
+        if (state is RegisterError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.registerError!),
+              content: Text(state.error),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
             ),
           );
-          context.read<RegisterBloc>().add(ClearRegisterError());
+          bloc.add(ClearRegisterError());
         }
       },
-      builder: (context, state) {
-        return Scaffold(
-          resizeToAvoidBottomInset: false,
-          backgroundColor: AppColors.nearBlack,
-          body: Stack(
-            children: [
-              SingleChildScrollView(
-                keyboardDismissBehavior:
-                ScrollViewKeyboardDismissBehavior.onDrag,
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 48),
-                      const CustomBackButton(),
-                      const SizedBox(height: 16),
-                      const AppLogo(),
-                      const SizedBox(height: 16),
-                      AppTextField(
-                        label: "Username",
-                        controller: _usernameController,
-                        validator: (value) =>
-                            ValidatorHelper.validateUsername(value),
-                        keyboardType: TextInputType.emailAddress,
-                        hintText: "Enter your username",
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: AppColors.nearBlack,
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 48),
+                    const CustomBackButton(),
+                    const SizedBox(height: 16),
+                    const AppLogo(),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      label: "Username",
+                      controller: _usernameController,
+                      validator: (value) =>
+                          ValidatorHelper.validateUsername(value),
+                      keyboardType: TextInputType.emailAddress,
+                      hintText: "Enter your username",
+                    ),
+                    const SizedBox(height: 8),
+                    BlocBuilder<RegisterBloc, RegisterState>(
+                      buildWhen: (previous, current) =>
+                      current is PasswordVisible ||
+                          current is PasswordHidden,
+                      builder: (context, state) {
+                        return AppTextField(
+                          label: "Password",
+                          controller: _passwordController,
+                          hintText: "Enter your password",
+                          validator: (value) =>
+                              ValidatorHelper.validatePassword(value),
+                          isPassword: true,
+                          keyboardType: TextInputType.visiblePassword,
+                          obscureText: !bloc.isPasswordVisible,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    BlocBuilder<RegisterBloc, RegisterState>(
+                      buildWhen: (previous, current) =>
+                      current is ConfirmPasswordVisible ||
+                          current is ConfirmPasswordHidden,
+                      builder: (context, state) {
+                        return AppTextField(
+                          label: "Confirm Password",
+                          controller: _confirmPasswordController,
+                          hintText: "Repeat your password",
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please confirm your password';
+                            }
+                            if (value != _passwordController.text) {
+                              return 'Passwords do not match';
+                            }
+                            return null;
+                          },
+                          isPassword: true,
+                          keyboardType: TextInputType.visiblePassword,
+                          obscureText: !bloc.isConfirmPasswordVisible,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                        horizontal: 16,
                       ),
-                      const SizedBox(height: 8),
-                      AppTextField(
-                        label: "Password",
-                        controller: _passwordController,
-                        hintText: "Enter your password",
-                        validator: (value) =>
-                            ValidatorHelper.validatePassword(value),
-                        isPassword: true,
-                        keyboardType: TextInputType.visiblePassword,
-                        obscureText: !state.isPasswordVisible,
-                      ),
-                      const SizedBox(height: 8),
-                      AppTextField(
-                        label: "Confirm Password",
-                        controller: _confirmPasswordController,
-                        hintText: "Repeat your password",
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please confirm your password';
-                          }
-                          if (value != _passwordController.text) {
-                            return 'Passwords do not match';
-                          }
-                          return null;
+                      child: ListenableBuilder(
+                        listenable: Listenable.merge([
+                          _usernameController,
+                          _passwordController,
+                          _confirmPasswordController,
+                        ]),
+                        builder: (context, _) {
+                          return BlocBuilder<RegisterBloc, RegisterState>(
+                            buildWhen: (previous, current) =>
+                            current is RegisterLoading ||
+                                current is RegisterErrorCleared ||
+                                current is RegisterInitial,
+                            builder: (context, state) {
+                              final isLoading = state is RegisterLoading;
+                              return AppButton(
+                                text: 'Register',
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate() &&
+                                      !isLoading) {
+                                    bloc.add(
+                                      RegisterSubmitted(
+                                        _usernameController.text,
+                                        _passwordController.text,
+                                        _confirmPasswordController.text,
+                                      ),
+                                    );
+                                  }
+                                },
+                              );
+                            },
+                          );
                         },
-                        isPassword: true,
-                        keyboardType: TextInputType.visiblePassword,
-                        obscureText: !state.isConfirmPasswordVisible,
                       ),
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: 16,
-                        ),
-                        child: ListenableBuilder(
-                          listenable: Listenable.merge([
-                            _usernameController,
-                            _passwordController,
-                            _confirmPasswordController,
-                          ]),
-                          builder: (context, _) {
-                            return AppButton(
-                              text: 'Register',
-                              onPressed: () {
-                                if (_formKey.currentState!.validate() &&
-                                    !state.isLoading) {
-                                  context.read<RegisterBloc>().add(
-                                    RegisterSubmitted(
-                                      _usernameController.text,
-                                      _passwordController.text,
-                                      _confirmPasswordController.text,
-                                    ),
-                                  );
-                                }
-                              },
-                            );
-                          },
-                        ),
+                    ),
+                    const SizedBox(height: 16),
+                    Center(child: SvgPicture.asset(Assets.svgsOrDiv)),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                        horizontal: 16,
                       ),
-                      const SizedBox(height: 16),
-                      Center(child: SvgPicture.asset(Assets.svgsOrDiv)),
-                      const SizedBox(height: 16),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: 16,
-                        ),
-                        child: SocialLoginButton(
-                          iconAsset: Assets.svgsGoogle,
-                          text: 'Register with Google',
-                          onPressed: () {
-                            // TODO: Implement Google Sign In
-                          },
-                        ),
+                      child: SocialLoginButton(
+                        iconAsset: Assets.svgsGoogle,
+                        text: 'Register with Google',
+                        onPressed: () {
+                          // TODO: Implement Google Sign In
+                        },
                       ),
-                      const SizedBox(height: 16),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: 16,
-                        ),
-                        child: SocialLoginButton(
-                          iconAsset: Assets.svgsFacebook,
-                          text: 'Register with Facebook',
-                          onPressed: () {
-                            // TODO: Implement Facebook Sign In
-                          },
-                        ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                        horizontal: 16,
                       ),
-                      const SizedBox(height: 24),
-                      Center(
-                        child: TextWithLink(
-                          normalText: "Already have an account? ",
-                          linkText: "Login",
-                          onLinkTap: () => context.pop(),
-                        ),
+                      child: SocialLoginButton(
+                        iconAsset: Assets.svgsFacebook,
+                        text: 'Register with Facebook',
+                        onPressed: () {
+                          // TODO: Implement Facebook Sign In
+                        },
                       ),
-                      const SizedBox(height: 8),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: TextWithLink(
+                        normalText: "Already have an account? ",
+                        linkText: "Login",
+                        onLinkTap: () => context.pop(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
               ),
-              LoadingOverlay(isLoading: state.isLoading),
-            ],
-          ),
-        );
-      },
+            ),
+            BlocBuilder<RegisterBloc, RegisterState>(
+              buildWhen: (previous, current) =>
+              current is RegisterLoading ||
+                  current is RegisterError ||
+                  current is RegisterSuccess ||
+                  current is RegisterErrorCleared ||
+                  current is RegisterInitial,
+              builder: (context, state) {
+                return LoadingOverlay(isLoading: state is RegisterLoading);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
