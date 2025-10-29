@@ -6,7 +6,6 @@ import 'package:to_do/features/on_boarding/presentation/bloc/on_board_bloc.dart'
 import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_Indicators.dart';
 import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_content.dart';
 import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_controls.dart';
-
 import '../../core/routing/routes.dart';
 import '../../core/style/colors/app_colors.dart';
 import '../../core/style/text/app_texts.dart';
