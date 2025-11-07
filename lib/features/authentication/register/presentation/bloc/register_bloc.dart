@@ -1,16 +1,24 @@
 
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../../core/fire_base/auth_service.dart';
 
 part 'register_event.dart';
 part 'register_state.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
-  RegisterBloc() : super(RegisterInitial()) {
+
+  final AuthService _authService;
+
+  RegisterBloc({required AuthService authService})
+      : _authService = authService,
+        super(RegisterInitial()) {
     on<PasswordVisibilityToggled>(_onPasswordVisibilityToggled);
     on<ConfirmPasswordVisibilityToggled>(_onConfirmPasswordVisibilityToggled);
     on<RegisterSubmitted>(_onRegisterSubmitted);
+    on<GoogleSignUpRequested>(_onGoogleSignInRequested);
+    on<FacebookSignUpRequested>(_onFacebookSignInRequested);
     on<RegisterReset>(_onRegisterReset);
     on<ClearRegisterError>(_onClearRegisterError);
   }
@@ -43,17 +51,42 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     emit(RegisterLoading());
 
     try {
-      // TODO: Implement your registration logic here
-      // Example:
-      // final result = await authRepository.register(
-      //   username: event.username,
-      //   password: event.password,
-      // );
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      await _authService.signUp(
+        email: event.username,
+        password: event.password,
+      );
 
-      // Simulate success
+      emit(RegisterSuccess());
+    } catch (e) {
+      emit(RegisterError(e.toString()));
+    }
+  }
+
+  // ADD: Google Sign In Handler
+  Future<void> _onGoogleSignInRequested(
+      GoogleSignUpRequested event,
+      Emitter<RegisterState> emit,
+      ) async {
+    emit(RegisterLoading());
+
+    try {
+      await _authService.continueWithGoogle();
+      emit(RegisterSuccess());
+    } catch (e) {
+      emit(RegisterError(e.toString()));
+    }
+  }
+
+  // ADD: Facebook Sign In Handler
+  Future<void> _onFacebookSignInRequested(
+      FacebookSignUpRequested event,
+      Emitter<RegisterState> emit,
+      ) async {
+    emit(RegisterLoading());
+
+    try {
+      await _authService.continueWithFacebook();
       emit(RegisterSuccess());
     } catch (e) {
       emit(RegisterError(e.toString()));

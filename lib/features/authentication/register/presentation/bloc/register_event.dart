@@ -1,3 +1,4 @@
+
 part of 'register_bloc.dart';
 
 @immutable
@@ -14,6 +15,10 @@ final class RegisterSubmitted extends RegisterEvent {
 
   RegisterSubmitted(this.username, this.password, this.confirmPassword);
 }
+
+final class GoogleSignUpRequested extends RegisterEvent {}
+
+final class FacebookSignUpRequested extends RegisterEvent {}
 
 final class RegisterReset extends RegisterEvent {}
 

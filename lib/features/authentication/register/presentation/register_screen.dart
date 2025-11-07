@@ -7,14 +7,15 @@ import 'package:to_do/core/shared_widgets/app_text_field.dart';
 import 'package:to_do/core/routing/routes.dart';
 import 'package:to_do/core/style/colors/app_colors.dart';
 import 'package:to_do/core/validators/validator_helper.dart';
-import 'package:to_do/features/register/presentation/bloc/register_bloc.dart';
-import '../../../core/shared_widgets/app_button.dart';
-import '../../../core/shared_widgets/app_logo.dart';
-import '../../../core/shared_widgets/custom_back_button.dart';
-import '../../../core/shared_widgets/loading_overlay.dart';
-import '../../../core/shared_widgets/social_login_button.dart';
-import '../../../core/shared_widgets/text_with_link.dart';
-import '../../../generated/assets.dart';
+
+import '../../../../core/shared_widgets/app_button.dart';
+import '../../../../core/shared_widgets/app_logo.dart';
+import '../../../../core/shared_widgets/custom_back_button.dart';
+import '../../../../core/shared_widgets/loading_overlay.dart';
+import '../../../../core/shared_widgets/social_login_button.dart';
+import '../../../../core/shared_widgets/text_with_link.dart';
+import '../../../../generated/assets.dart';
+import 'bloc/register_bloc.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -85,10 +86,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const AppLogo(),
                     const SizedBox(height: 16),
                     AppTextField(
-                      label: "Username",
+                      label: "Email",
                       controller: _usernameController,
                       validator: (value) =>
-                          ValidatorHelper.validateUsername(value),
+                          ValidatorHelper.validateEmailAddress(value),
                       keyboardType: TextInputType.emailAddress,
                       hintText: "Enter your username",
                     ),
@@ -185,7 +186,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         iconAsset: Assets.svgsGoogle,
                         text: 'Register with Google',
                         onPressed: () {
-                          // TODO: Implement Google Sign In
+                          bloc.add(GoogleSignUpRequested());
                         },
                       ),
                     ),
@@ -198,7 +199,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         iconAsset: Assets.svgsFacebook,
                         text: 'Register with Facebook',
                         onPressed: () {
-                          // TODO: Implement Facebook Sign In
+                         bloc.add(FacebookSignUpRequested());
                         },
                       ),
                     ),
