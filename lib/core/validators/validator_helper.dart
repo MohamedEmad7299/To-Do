@@ -4,7 +4,7 @@ class ValidatorHelper {
 
   /// Validates a username (email address)
   /// Returns null if valid, or an error message if invalid
-  static String? validateUsername(String? username) {
+  static String? validateEmailAddress(String? username) {
 
     if (username != null){
 
