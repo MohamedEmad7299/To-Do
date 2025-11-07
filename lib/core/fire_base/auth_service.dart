@@ -1,4 +1,3 @@
-
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -158,6 +157,23 @@ class AuthService {
     } catch (e) {
       log('Facebook sign-in error: $e');
       throw 'An unexpected error occurred during Facebook sign-in: $e';
+    }
+  }
+
+  Future<void> resetPassword({required String email}) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'invalid-email') {
+        throw 'The email address is not valid.';
+      } else if (e.code == 'user-not-found') {
+        throw 'No user found for that email.';
+      } else if (e.code == 'too-many-requests') {
+        throw 'Too many attempts. Please try again later.';
+      }
+      throw e.message ?? 'Failed to send password reset email';
+    } catch (e) {
+      throw 'An unexpected error occurred while sending reset email';
     }
   }
 
