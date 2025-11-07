@@ -6,16 +6,16 @@ import 'package:to_do/core/shared_widgets/app_text_field.dart';
 import 'package:to_do/core/routing/routes.dart';
 import 'package:to_do/core/style/colors/app_colors.dart';
 import 'package:to_do/core/validators/validator_helper.dart';
-import 'package:to_do/features/login/presentation/bloc/login_bloc.dart';
-import '../../../core/shared_widgets/app_button.dart';
-import '../../../core/shared_widgets/app_logo.dart';
-import '../../../core/shared_widgets/custom_back_button.dart';
-import '../../../core/shared_widgets/loading_overlay.dart';
-import '../../../core/shared_widgets/social_login_button.dart';
-import '../../../core/shared_widgets/text_with_link.dart';
-import '../../../core/style/text/app_texts.dart';
-import '../../../generated/assets.dart';
+import '../../../../core/shared_widgets/app_button.dart';
+import '../../../../core/shared_widgets/app_logo.dart';
+import '../../../../core/shared_widgets/custom_back_button.dart';
+import '../../../../core/shared_widgets/loading_overlay.dart';
+import '../../../../core/shared_widgets/social_login_button.dart';
+import '../../../../core/shared_widgets/text_with_link.dart';
+import '../../../../core/style/text/app_texts.dart';
+import '../../../../generated/assets.dart';
 import '../finger_print/finger_print.dart';
+import 'bloc/login_bloc.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -89,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       label: "Username",
                       controller: _usernameController,
                       validator: (value) =>
-                          ValidatorHelper.validateUsername(value),
+                          ValidatorHelper.validateEmailAddress(value),
                       keyboardType: TextInputType.emailAddress,
                       hintText: "Enter your username",
                     ),
@@ -168,7 +168,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         iconAsset: Assets.svgsGoogle,
                         text: 'Login with Google',
                         onPressed: () {
-                          // TODO: Implement Google Sign In
+                          // CHANGE: Trigger Google Sign In
+                          loginBloc.add(GoogleSignInRequested());
                         },
                       ),
                     ),
@@ -181,7 +182,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         iconAsset: Assets.svgsFacebook,
                         text: 'Login with Facebook',
                         onPressed: () {
-                          // TODO: Implement Facebook Sign In
+                          // CHANGE: Trigger Facebook Sign In
+                          loginBloc.add(FacebookSignInRequested());
                         },
                       ),
                     ),

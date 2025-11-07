@@ -2,21 +2,24 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
-import 'package:local_auth_ios/types/auth_messages_ios.dart';
+
+import '../../../../../core/fire_base/auth_service.dart';
 
 part 'login_event.dart';
-
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  // Internal state tracking
+  final AuthService _authService;
+
   String _username = '';
   String _password = '';
   bool _isLoading = false;
   bool _isPasswordVisible = false;
   bool _biometricAvailable = false;
 
-  LoginBloc({LocalAuthentication? auth}) : super(LoginInitial()) {
+  LoginBloc({required AuthService authService})
+      : _authService = authService,
+        super(LoginInitial()) {
     on<CheckBiometricAvailability>((event, emit) async {
       await _checkBiometricAvailability(emit);
     });
@@ -31,6 +34,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
     on<LoginSubmitted>((event, emit) async {
       await _handleLoginSubmission(event, emit);
+    });
+
+    // ADD: Google Sign In Handler
+    on<GoogleSignInRequested>((event, emit) async {
+      await _handleGoogleSignIn(emit);
+    });
+
+    // ADD: Facebook Sign In Handler
+    on<FacebookSignInRequested>((event, emit) async {
+      await _handleFacebookSignIn(emit);
     });
 
     on<LoginReset>((event, emit) {
@@ -84,7 +97,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
             signInTitle: 'Biometric authentication required',
             cancelButton: 'Cancel',
           ),
-          IOSAuthMessages(cancelButton: 'Cancel'),
         ],
       );
 
@@ -106,9 +118,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   void _togglePasswordVisibility(
-    PasswordVisibilityChanged event,
-    Emitter<LoginState> emit,
-  ) {
+      PasswordVisibilityChanged event,
+      Emitter<LoginState> emit,
+      ) {
     _isPasswordVisible = !event.isPasswordVisible;
 
     if (_isPasswordVisible) {
@@ -119,9 +131,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   Future<void> _handleLoginSubmission(
-    LoginSubmitted event,
-    Emitter<LoginState> emit,
-  ) async {
+      LoginSubmitted event,
+      Emitter<LoginState> emit,
+      ) async {
     _username = event.username;
     _password = event.password;
     _isLoading = true;
@@ -131,7 +143,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(LoginLoading());
 
     try {
-      await Future.delayed(const Duration(seconds: 100));
+      // CHANGE: Use Firebase sign in instead of mock delay
+      await _authService.signIn(
+        email: event.username,
+        password: event.password,
+      );
 
       _isLoading = false;
       emit(LoginNotLoading());
@@ -139,7 +155,45 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     } catch (e) {
       _isLoading = false;
       emit(LoginNotLoading());
-      emit(LoginErrorState('Login failed. Please check your credentials.'));
+      emit(LoginErrorState(e.toString()));
+    }
+  }
+
+  // ADD: Google Sign In Handler
+  Future<void> _handleGoogleSignIn(Emitter<LoginState> emit) async {
+    emit(LoginErrorCleared());
+    emit(LoginLoading());
+    _isLoading = true;
+
+    try {
+      await _authService.continueWithGoogle();
+
+      _isLoading = false;
+      emit(LoginNotLoading());
+      emit(LoginSuccessState());
+    } catch (e) {
+      _isLoading = false;
+      emit(LoginNotLoading());
+      emit(LoginErrorState(e.toString()));
+    }
+  }
+
+  // ADD: Facebook Sign In Handler
+  Future<void> _handleFacebookSignIn(Emitter<LoginState> emit) async {
+    emit(LoginErrorCleared());
+    emit(LoginLoading());
+    _isLoading = true;
+
+    try {
+      await _authService.continueWithFacebook();
+
+      _isLoading = false;
+      emit(LoginNotLoading());
+      emit(LoginSuccessState());
+    } catch (e) {
+      _isLoading = false;
+      emit(LoginNotLoading());
+      emit(LoginErrorState(e.toString()));
     }
   }
 

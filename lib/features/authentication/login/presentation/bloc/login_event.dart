@@ -19,6 +19,12 @@ final class LoginSubmitted extends LoginEvent {
   LoginSubmitted(this.username, this.password);
 }
 
+// ADD: Google Sign In Event
+final class GoogleSignInRequested extends LoginEvent {}
+
+// ADD: Facebook Sign In Event
+final class FacebookSignInRequested extends LoginEvent {}
+
 final class LoginReset extends LoginEvent {}
 
 final class ClearLoginError extends LoginEvent {}
