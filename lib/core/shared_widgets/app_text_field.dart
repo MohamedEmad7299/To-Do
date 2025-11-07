@@ -129,7 +129,7 @@ class _AppTextFieldState extends State<AppTextField> {
             controller: _controller,
             validator:
             widget.validator ??
-                    (value) => ValidatorHelper.validateUsername(value ?? ''),
+                    (value) => ValidatorHelper.validateEmailAddress(value ?? ''),
             keyboardType: widget.keyboardType ?? TextInputType.text,
             obscureText: widget.isPassword && _obscureText,
             maxLines: widget.maxLines,
