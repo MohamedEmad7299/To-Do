@@ -33,7 +33,7 @@ class WelcomeScreen extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'Welcome to UpTodo',
+          'Welcome to TO-DO',
           style: AppTextStyles.font32White700W,
           textAlign: TextAlign.center,
         ),

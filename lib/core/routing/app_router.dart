@@ -18,7 +18,7 @@ import '../fire_base/auth_service.dart';
 
 class AppRouter {
   static final router = GoRouter(
-    initialLocation: Routes.login,
+    initialLocation: Routes.onBoarding,
     routes: [
       GoRoute(
         path: Routes.splash,
