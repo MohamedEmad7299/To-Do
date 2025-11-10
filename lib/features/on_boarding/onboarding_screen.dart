@@ -7,7 +7,6 @@ import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_indic
 import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_content.dart';
 import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_controls.dart';
 import '../../core/routing/routes.dart';
-import '../../core/style/colors/app_colors.dart';
 import '../../core/style/text/app_texts.dart';
 import 'data/onboarding_data.dart';
 
@@ -70,7 +69,7 @@ class _OnboardingViewState extends State<_OnboardingView> {
           );
         },
         child: Scaffold(
-          backgroundColor: AppColors.nearBlack,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16),
