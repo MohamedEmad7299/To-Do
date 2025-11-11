@@ -1,6 +1,5 @@
 
 import 'package:flutter/material.dart';
-import '../../../../core/style/text/app_texts.dart';
 
 class CalendarPage extends StatelessWidget {
   const CalendarPage({super.key});
@@ -14,20 +13,19 @@ class CalendarPage extends StatelessWidget {
           Icon(
             Icons.calendar_month_rounded,
             size: 120,
-            color: const Color(0xFF7B68EE),
+            color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: 24),
           Text(
             "Your Calendar",
-            style: AppTextStyles.font20White.copyWith(fontSize: 24),
+            style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 12),
           Text(
             "View all your scheduled tasks",
-            style: AppTextStyles.font20White.copyWith(
-              fontSize: 16,
-              color: Colors.white.withValues(alpha: 0.7),
-            ),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
             textAlign: TextAlign.center,
           ),
         ],
