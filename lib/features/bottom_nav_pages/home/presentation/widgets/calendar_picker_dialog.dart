@@ -252,11 +252,3 @@ class _CalendarPickerDialogState extends State<CalendarPickerDialog> {
     );
   }
 }
-
-// Helper function to show the calendar
-Future<DateTime?> showCalendarPicker(BuildContext context, {DateTime? initialDate}) {
-  return showDialog<DateTime>(
-    context: context,
-    builder: (context) => CalendarPickerDialog(initialDate: initialDate),
-  );
-}
