@@ -50,4 +50,10 @@ class AppTextStyles {
       fontSize: 16,
       color: Colors.white
   );
+
+  static final TextStyle font14GrayW400 = GoogleFonts.lato(
+    fontSize: 14,
+    color: AppColors.ashGray,
+    fontWeight: FontWeight.w400,
+  );
 }
