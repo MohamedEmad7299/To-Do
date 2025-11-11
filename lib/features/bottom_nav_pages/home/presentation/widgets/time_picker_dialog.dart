@@ -238,12 +238,16 @@ Future<TimeOfDay?> showTimePicker2(BuildContext context, {TimeOfDay? initialTime
 
 // Combined function to show calendar then time picker
 Future<Map<String, dynamic>?> showDateTimePicker(BuildContext context, {DateTime? initialDate}) async {
+  if (!context.mounted) return null;
+
   final selectedDate = await showDialog<DateTime>(
     context: context,
     builder: (context) => CalendarPickerDialog(initialDate: initialDate),
   );
 
   if (selectedDate == null) return null;
+
+  if (!context.mounted) return null;
 
   final selectedTime = await showDialog<TimeOfDay>(
     context: context,
