@@ -1,11 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:to_do/core/style/text/app_texts.dart';
 import 'package:to_do/features/bottom_nav_pages/home/presentation/widgets/add_task_dialog.dart';
-import '../../../../core/style/colors/app_colors.dart';
 import '../../../../generated/assets.dart';
 import '../../calender/presentation/calender_page.dart';
 import '../../focus/presentation/focus_page.dart';
@@ -14,19 +11,21 @@ import '../../tasks/presentation/tasks_page.dart';
 import 'bloc/home_bloc.dart';
 
 class HomeScreen extends StatelessWidget {
-
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        systemNavigationBarColor: AppColors.Onyx,
+      value: SystemUiOverlayStyle(
+        systemNavigationBarColor: Theme.of(context).colorScheme.surface,
+        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       ),
       child: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: AppColors.Onyx,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             body: _getPage(state.currentIndex),
             floatingActionButton: SizedBox(
               height: 70,
@@ -35,14 +34,15 @@ class HomeScreen extends StatelessWidget {
                 onPressed: () {
                   showAddTaskBottomSheet(context);
                 },
-                backgroundColor: AppColors.lavenderPurple,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 shape: const CircleBorder(),
                 child: const Icon(Icons.add, size: 30, color: Colors.white),
               ),
             ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+            floatingActionButtonLocation:
+            FloatingActionButtonLocation.centerDocked,
             bottomNavigationBar: BottomAppBar(
-              color: AppColors.Onyx,
+              color: Theme.of(context).colorScheme.surface,
               shape: const CircularNotchedRectangle(),
               notchMargin: 8,
               child: SizedBox(
@@ -119,16 +119,33 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SvgPicture.asset(icon, height: 24, width: 24),
+          SvgPicture.asset(
+            icon,
+            height: 24,
+            width: 24,
+            colorFilter: ColorFilter.mode(
+              isActive
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+              BlendMode.srcIn,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(label, style: AppTextStyles.font12White),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: isActive
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+          ),
           if (isActive)
             Container(
               margin: const EdgeInsets.only(top: 4),
               height: 3,
               width: 30,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
