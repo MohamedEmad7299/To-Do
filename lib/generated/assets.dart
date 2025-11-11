@@ -2,30 +2,41 @@
 class Assets {
   Assets._();
 
+  static const String svgsAdd = 'assets/svgs/add.svg';
   static const String svgsBoard1 = 'assets/svgs/board1.svg';
   static const String svgsBoard2 = 'assets/svgs/board2.svg';
   static const String svgsBoard3 = 'assets/svgs/board3.svg';
+  static const String svgsBread = 'assets/svgs/bread.svg';
+  static const String svgsBriefcase = 'assets/svgs/briefcase.svg';
   static const String svgsCalendar = 'assets/svgs/calendar.svg';
   static const String svgsCamera = 'assets/svgs/camera.svg';
+  static const String svgsCameraV = 'assets/svgs/camera_v.svg';
   static const String svgsClock = 'assets/svgs/clock.svg';
   static const String svgsEmptyPlaceholder = 'assets/svgs/empty_placeholder.svg';
   static const String svgsFacebook = 'assets/svgs/facebook.svg';
   static const String svgsFlag = 'assets/svgs/flag.svg';
   static const String svgsFlash = 'assets/svgs/flash.svg';
   static const String svgsGoogle = 'assets/svgs/google.svg';
+  static const String svgsHeartbeat = 'assets/svgs/heartbeat.svg';
   static const String svgsHome = 'assets/svgs/home.svg';
+  static const String svgsHomeTag = 'assets/svgs/home_tag.svg';
   static const String svgsInfoCircle = 'assets/svgs/info-circle.svg';
   static const String svgsKey = 'assets/svgs/key.svg';
   static const String svgsLike = 'assets/svgs/like.svg';
   static const String svgsLogout = 'assets/svgs/logout.svg';
+  static const String svgsMegaphone = 'assets/svgs/megaphone.svg';
   static const String svgsMenu = 'assets/svgs/menu.svg';
+  static const String svgsMortarboard = 'assets/svgs/mortarboard.svg';
+  static const String svgsMusic = 'assets/svgs/music.svg';
   static const String svgsOrDiv = 'assets/svgs/or_div.svg';
   static const String svgsSend = 'assets/svgs/send.svg';
   static const String svgsSetting = 'assets/svgs/setting.svg';
   static const String svgsSplash = 'assets/svgs/splash.svg';
+  static const String svgsSport = 'assets/svgs/sport.svg';
   static const String svgsTag = 'assets/svgs/tag.svg';
   static const String svgsTask = 'assets/svgs/task.svg';
   static const String svgsTimer = 'assets/svgs/timer.svg';
   static const String svgsUser = 'assets/svgs/user.svg';
+  static const String svgsXO = 'assets/svgs/x_o.svg';
 
 }
