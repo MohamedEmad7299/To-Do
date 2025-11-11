@@ -1,14 +1,7 @@
-
-
-
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 class AppColors {
-
   static const nearBlack = Color(0xFF121212);
-  //static const lavenderPurple = Color(0xFF8875FF);
   static const MaterialColor lavenderPurple = MaterialColor(
     0xFF8875FF,
     <int, Color>{
@@ -25,9 +18,9 @@ class AppColors {
     },
   );
 
-  static const lavenderIndigo  = Color(0xFF8687E7);
+  static const lavenderIndigo = Color(0xFF8687E7);
   static const weakGray = Color(0x70FFFFFF);
   static const jetBlack = Color(0xFF1D1D1D);
   static const ashGray = Color(0xFF979797);
-  static const Onyx = Color(0xFF363636);
+  static const onyx = Color(0xFF363636);
 }
