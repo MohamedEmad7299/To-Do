@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:to_do/core/shared_widgets/app_text_field.dart';
-import 'package:to_do/core/style/colors/app_colors.dart';
 import 'package:to_do/core/validators/validator_helper.dart';
 import '../../../../core/shared_widgets/app_button.dart';
 import '../../../../core/shared_widgets/app_logo.dart';
@@ -54,7 +53,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
           // Navigate back after short delay
           Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) {
+            if (context.mounted) {
               context.pop();
             }
           });
@@ -75,7 +74,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        backgroundColor: AppColors.nearBlack,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Stack(
           children: [
             SingleChildScrollView(
