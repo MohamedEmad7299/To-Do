@@ -2,7 +2,6 @@
 class Assets {
   Assets._();
 
-  static const String svgsAdd = 'assets/svgs/add.svg';
   static const String svgsBoard1 = 'assets/svgs/board1.svg';
   static const String svgsBoard2 = 'assets/svgs/board2.svg';
   static const String svgsBoard3 = 'assets/svgs/board3.svg';
