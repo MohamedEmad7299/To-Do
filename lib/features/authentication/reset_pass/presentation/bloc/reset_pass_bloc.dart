@@ -2,7 +2,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do/features/authentication/reset_pass/presentation/bloc/reset_pass_event.dart';
 import 'package:to_do/features/authentication/reset_pass/presentation/bloc/reset_pass_state.dart';
-import '../../../../../core/fire_base/auth_service.dart';
+import '../../../../../core/services/auth_service.dart';
 
 class ResetPasswordBloc extends Bloc<ResetPasswordEvent, ResetPasswordState> {
   final AuthService _authService;
