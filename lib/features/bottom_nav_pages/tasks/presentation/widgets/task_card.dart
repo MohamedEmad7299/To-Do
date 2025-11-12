@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:to_do/core/routing/routes.dart';
 import 'package:to_do/core/style/text/app_texts.dart';
-import 'package:to_do/core/fire_base/category_firestore_service.dart';
+import 'package:to_do/core/services/category_firestore_service.dart';
 import 'package:to_do/generated/assets.dart';
 import '../../../home/presentation/models/task_model.dart';
 import '../../../home/presentation/models/category.dart';
@@ -134,7 +134,10 @@ class _TaskCardState extends State<TaskCard> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
