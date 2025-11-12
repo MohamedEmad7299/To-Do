@@ -157,7 +157,10 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
           TextButton(
             onPressed: () {
