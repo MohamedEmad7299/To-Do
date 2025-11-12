@@ -1,27 +1,106 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:to_do/core/style/colors/app_colors.dart';
+import 'package:go_router/go_router.dart';
+import 'package:to_do/core/services/auth_service.dart';
+import 'package:to_do/core/routing/routes.dart';
 import '../../../../generated/assets.dart';
 
 class ProfilePage extends StatelessWidget {
+  final AuthService _authService = AuthService();
 
-  const ProfilePage({super.key});
+  ProfilePage({super.key});
+
+  void _handleLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: Theme.of(context).cardColor,
+          title: Text(
+            'Logout',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          content: Text(
+            'Are you sure you want to logout?',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: const Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+
+                // Show loading indicator
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext loadingContext) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  },
+                );
+
+                try {
+                  // Perform logout
+                  await _authService.signOut();
+
+                  // Close loading indicator
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+
+                    // Navigate to login screen and clear navigation stack
+                    context.go(Routes.login);
+                  }
+                } catch (e) {
+                  // Close loading indicator
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+
+                    // Show error message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Logout failed: ${e.toString()}'),
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: Text(
+                'Logout',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.nearBlack,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Profile',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
         centerTitle: true,
       ),
@@ -41,17 +120,13 @@ class ProfilePage extends StatelessWidget {
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: const Icon(Icons.person, size: 50, color: Colors.white70),
+              child: const Icon(Icons.person, size: 50, color: Colors.white),
             ),
             const SizedBox(height: 16),
             // Name
-            const Text(
+            Text(
               'Martha Hays',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 20),
             // Task Stats
@@ -63,17 +138,18 @@ class ProfilePage extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2A2A2A),
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Theme.of(context).dividerColor,
+                          width: 1,
+                        ),
                       ),
-                      child: const Column(
+                      child: Column(
                         children: [
                           Text(
                             '10 Task left',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
                       ),
@@ -84,17 +160,18 @@ class ProfilePage extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2A2A2A),
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Theme.of(context).dividerColor,
+                          width: 1,
+                        ),
                       ),
-                      child: const Column(
+                      child: Column(
                         children: [
                           Text(
                             '5 Task done',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
                       ),
@@ -105,100 +182,99 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             // Settings Section
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Settings',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(context).textTheme.labelMedium,
                 ),
               ),
             ),
             const SizedBox(height: 12),
             _buildMenuItem(
+              context: context,
               icon: Assets.svgsSetting,
               title: 'App Settings',
-              onTap: () {},
+              onTap: () {
+                context.push(Routes.settings);
+              },
             ),
             const SizedBox(height: 20),
             // Account Section
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Account',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(context).textTheme.labelMedium,
                 ),
               ),
             ),
             const SizedBox(height: 12),
             _buildMenuItem(
+              context: context,
               icon: Assets.svgsUser,
               title: 'Change account name',
               onTap: () {},
             ),
             _buildMenuItem(
+              context: context,
               icon: Assets.svgsKey,
               title: 'Change account password',
               onTap: () {},
             ),
             _buildMenuItem(
+              context: context,
               icon: Assets.svgsCamera,
               title: 'Change account Image',
               onTap: () {},
             ),
             const SizedBox(height: 20),
             // Uptodo Section
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Uptodo',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(context).textTheme.labelMedium,
                 ),
               ),
             ),
             const SizedBox(height: 12),
             _buildMenuItem(
+              context: context,
               icon: Assets.svgsMenu,
               title: 'About US',
               onTap: () {},
             ),
             _buildMenuItem(
+              context: context,
               icon: Assets.svgsInfoCircle,
               title: 'FAQ',
               onTap: () {},
             ),
             _buildMenuItem(
+              context: context,
               icon: Assets.svgsFlash,
               title: 'Help & Feedback',
               onTap: () {},
             ),
             _buildMenuItem(
+              context: context,
               icon: Assets.svgsLike,
               title: 'Support US',
               onTap: () {},
             ),
             const SizedBox(height: 12),
             _buildMenuItem(
+              context: context,
               icon: Assets.svgsLogout,
               title: 'Log out',
-              onTap: () {},
+              onTap: () => _handleLogout(context),
               isDestructive: true,
             ),
             const SizedBox(height: 32),
@@ -209,6 +285,7 @@ class ProfilePage extends StatelessWidget {
   }
 
   static Widget _buildMenuItem({
+    required BuildContext context,
     required String icon,
     required String title,
     required VoidCallback onTap,
@@ -227,21 +304,29 @@ class ProfilePage extends StatelessWidget {
                 icon,
                 width: 24,
                 height: 24,
+                colorFilter: ColorFilter.mode(
+                  isDestructive
+                      ? Theme.of(context).colorScheme.error
+                      : Theme.of(context).colorScheme.primary,
+                  BlendMode.srcIn,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
-                    color: isDestructive ? Colors.red : Colors.white,
+                    color: isDestructive
+                        ? Theme.of(context).colorScheme.error
+                        : Theme.of(context).textTheme.bodyLarge?.color,
                     fontSize: 15,
                   ),
                 ),
               ),
               if (!isDestructive)
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios,
-                  color: Colors.white54,
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                   size: 16,
                 ),
             ],
