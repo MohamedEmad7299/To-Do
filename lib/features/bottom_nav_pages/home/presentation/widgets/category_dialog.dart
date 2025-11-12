@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:to_do/core/fire_base/category_firestore_service.dart';
+import 'package:to_do/core/services/category_firestore_service.dart';
 import 'package:to_do/core/style/colors/app_colors.dart';
 import 'package:to_do/generated/assets.dart';
 
@@ -391,7 +391,7 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
             onPressed: () => Navigator.of(context).pop(false),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppColors.lavenderPurple),
+              style: TextStyle(color: Colors.white),
             ),
           ),
           TextButton(
@@ -767,7 +767,7 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
                       child: const Text(
                         'Cancel',
                         style: TextStyle(
-                          color: Color(0xFF8687E7),
+                          color: Colors.white,
                           fontSize: 16,
                         ),
                       ),
