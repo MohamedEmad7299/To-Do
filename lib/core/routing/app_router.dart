@@ -69,7 +69,7 @@ class AppRouter {
       ),
       GoRoute(
         path: Routes.profile,
-        builder: (context, state) => const ProfilePage(),
+        builder: (context, state) => ProfilePage(),
       ),
       GoRoute(
         path: Routes.settings,
