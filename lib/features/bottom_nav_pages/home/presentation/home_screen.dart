@@ -98,7 +98,7 @@ class HomeScreen extends StatelessWidget {
       case 2:
         return const FocusPage();
       case 3:
-        return const ProfilePage();
+        return ProfilePage();
       default:
         return const TasksPage();
     }
