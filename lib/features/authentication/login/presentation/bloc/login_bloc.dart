@@ -3,19 +3,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 
-import '../../../../../core/fire_base/auth_service.dart';
+import '../../../../../core/services/auth_service.dart';
+import '../../../../../core/services/biometric_auth_service.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final AuthService _authService;
+  final BiometricAuthService _biometricService = BiometricAuthService();
 
   String _username = '';
   String _password = '';
   bool _isLoading = false;
   bool _isPasswordVisible = false;
   bool _biometricAvailable = false;
+  bool _biometricEnabled = false;
 
   LoginBloc({required AuthService authService})
       : _authService = authService,
@@ -64,15 +67,20 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   Future<void> _checkBiometricAvailability(Emitter<LoginState> emit) async {
     try {
       final available = await LocalAuthentication().canCheckBiometrics;
-      _biometricAvailable = available;
+      final enabled = await _biometricService.isBiometricEnabled();
 
-      if (available) {
+      _biometricAvailable = available;
+      _biometricEnabled = enabled;
+
+      // Show fingerprint only if both available AND enabled in settings
+      if (available && enabled) {
         emit(BiometricAvailable());
       } else {
         emit(BiometricNotAvailable());
       }
     } catch (e) {
       _biometricAvailable = false;
+      _biometricEnabled = false;
       emit(BiometricNotAvailable());
       emit(LoginErrorState('Failed to check biometric availability'));
     }
@@ -89,6 +97,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     _isLoading = true;
 
     try {
+      // First, check if there is a last user
+      final hasLastUser = await _biometricService.hasLastUser();
+      
+      if (!hasLastUser) {
+        _isLoading = false;
+        emit(LoginNotLoading());
+        emit(LoginErrorState('No user has signed in before. Please sign in manually first.'));
+        return;
+      }
+
+      // If there is a last user, prompt for biometric authentication
       final authenticated = await LocalAuthentication().authenticate(
         localizedReason: 'Please authenticate to access your account',
         persistAcrossBackgrounding: false,
@@ -100,12 +119,21 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         ],
       );
 
-      _isLoading = false;
-      emit(LoginNotLoading());
-
       if (authenticated) {
-        emit(LoginSuccessState());
+        // If biometric authentication successful, sign in with the last user
+        try {
+          await _authService.signInWithBiometric();
+          _isLoading = false;
+          emit(LoginNotLoading());
+          emit(LoginSuccessState());
+        } catch (e) {
+          _isLoading = false;
+          emit(LoginNotLoading());
+          emit(LoginErrorState('Failed to sign in: ${e.toString()}'));
+        }
       } else {
+        _isLoading = false;
+        emit(LoginNotLoading());
         emit(LoginErrorState('Authentication failed'));
         await LocalAuthentication().stopAuthentication();
       }
@@ -212,4 +240,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   bool get isPasswordVisible => _isPasswordVisible;
 
   bool get biometricAvailable => _biometricAvailable;
+
+  bool get biometricEnabled => _biometricEnabled;
 }
