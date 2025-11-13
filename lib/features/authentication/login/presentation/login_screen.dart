@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -192,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       current is BiometricAvailable ||
                           current is BiometricNotAvailable,
                       builder: (context, state) {
-                        if (loginBloc.biometricAvailable) {
+                        if (loginBloc.biometricAvailable && loginBloc.biometricEnabled) {
                           return const Center(
                             child: FingerPrint(),
                           );
