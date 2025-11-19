@@ -16,6 +16,13 @@ import '../../features/bottom_nav_pages/home/presentation/home_screen.dart';
 import '../../features/bottom_nav_pages/home/presentation/models/task_model.dart';
 import '../../features/bottom_nav_pages/profile/presentation/profile_screen.dart';
 import '../../features/bottom_nav_pages/profile/presentation/settings_screen.dart';
+import '../../features/bottom_nav_pages/profile/presentation/change_account_name_screen.dart';
+import '../../features/bottom_nav_pages/profile/presentation/change_password_screen.dart';
+import '../../features/bottom_nav_pages/profile/presentation/change_account_image_screen.dart';
+import '../../features/bottom_nav_pages/profile/presentation/about_us_screen.dart';
+import '../../features/bottom_nav_pages/profile/presentation/faq_screen.dart';
+import '../../features/bottom_nav_pages/profile/presentation/help_screen.dart';
+import '../../features/bottom_nav_pages/profile/presentation/support_us_screen.dart';
 import '../../features/bottom_nav_pages/tasks/presentation/task_details_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 import '../services/auth_service.dart';
@@ -81,6 +88,34 @@ class AppRouter {
           final task = state.extra as TaskModel;
           return TaskDetailsScreen(task: task);
         },
+      ),
+      GoRoute(
+        path: Routes.changeAccountName,
+        builder: (context, state) => const ChangeAccountNameScreen(),
+      ),
+      GoRoute(
+        path: Routes.changePassword,
+        builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: Routes.changeAccountImage,
+        builder: (context, state) => const ChangeAccountImageScreen(),
+      ),
+      GoRoute(
+        path: Routes.aboutUs,
+        builder: (context, state) => const AboutUsScreen(),
+      ),
+      GoRoute(
+        path: Routes.faq,
+        builder: (context, state) => const FAQScreen(),
+      ),
+      GoRoute(
+        path: Routes.help,
+        builder: (context, state) => const HelpScreen(),
+      ),
+      GoRoute(
+        path: Routes.support,
+        builder: (context, state) => const SupportUsScreen(),
       ),
     ],
   );
