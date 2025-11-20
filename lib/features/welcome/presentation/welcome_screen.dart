@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:to_do/core/routing/routes.dart';
-import 'package:to_do/core/style/colors/app_colors.dart';
 import 'package:to_do/core/style/text/app_texts.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -18,7 +18,7 @@ class WelcomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(flex: 2),
-              _buildHeader(),
+              _buildHeader(context),
               const Spacer(flex: 3),
               _buildActionButtons(context),
               const SizedBox(height: 32),
@@ -29,17 +29,17 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
         Text(
-          'Welcome to TO-DO',
+          AppLocalizations.of(context)!.welcome,
           style: AppTextStyles.font32White700W,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
         Text(
-          'Please login to your account or create new account to continue',
+          AppLocalizations.of(context)!.welcomeMessage,
           style: AppTextStyles.font16White400W,
           textAlign: TextAlign.center,
         ),
@@ -51,12 +51,12 @@ class WelcomeScreen extends StatelessWidget {
     return Column(
       children: [
         _PrimaryButton(
-          label: 'LOGIN',
+          label: AppLocalizations.of(context)!.login,
           onPressed: () => context.push(Routes.login),
         ),
         const SizedBox(height: 16),
         _SecondaryButton(
-          label: 'CREATE ACCOUNT',
+          label: AppLocalizations.of(context)!.createAccount,
           onPressed: () => context.push(Routes.register),
         ),
       ],
@@ -81,7 +81,7 @@ class _PrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.lavenderPurple,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
@@ -116,7 +116,7 @@ class _SecondaryButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.white,
           side: BorderSide(
-            color: AppColors.lavenderPurple,
+            color: Theme.of(context).colorScheme.primary,
             width: 2,
           ),
           shape: RoundedRectangleBorder(
