@@ -72,8 +72,10 @@ class _AppTextFieldState extends State<AppTextField> {
     setState(() => _obscureText = !_obscureText);
   }
 
-  Widget? _buildSuffixIcon() {
+  Widget? _buildSuffixIcon(BuildContext context) {
     if (!_hasText && !widget.isPassword) return null;
+
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
     if (widget.isPassword) {
       return Row(
@@ -81,7 +83,7 @@ class _AppTextFieldState extends State<AppTextField> {
         children: [
           if (_controller.text.isNotEmpty)
             IconButton(
-              icon: Icon(Icons.highlight_remove, color: AppColors.lavenderPurple),
+              icon: Icon(Icons.highlight_remove, color: primaryColor),
               onPressed: _controller.clear,
             ),
           if (_controller.text.isNotEmpty)
@@ -94,7 +96,7 @@ class _AppTextFieldState extends State<AppTextField> {
           IconButton(
             icon: Icon(
               _obscureText ? Icons.visibility_off : Icons.visibility,
-              color: AppColors.lavenderPurple,
+              color: primaryColor,
             ),
             onPressed: _toggleObscureText,
           ),
@@ -103,7 +105,7 @@ class _AppTextFieldState extends State<AppTextField> {
     }
 
     return IconButton(
-      icon: Icon(Icons.highlight_remove, color: AppColors.lavenderPurple),
+      icon: Icon(Icons.highlight_remove, color: primaryColor),
       onPressed: _controller.clear,
     );
   }
@@ -117,6 +119,8 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -143,10 +147,10 @@ class _AppTextFieldState extends State<AppTextField> {
               fillColor: AppColors.jetBlack,
               filled: true,
               prefixIcon: widget.prefixIcon,
-              suffixIcon: _buildSuffixIcon(),
+              suffixIcon: _buildSuffixIcon(context),
               border: _buildBorder(AppColors.weakGray),
               enabledBorder: _buildBorder(AppColors.weakGray),
-              focusedBorder: _buildBorder(AppColors.lavenderPurple),
+              focusedBorder: _buildBorder(primaryColor),
               errorBorder: _buildBorder(Colors.red),
               focusedErrorBorder: _buildBorder(Colors.red),
             ),
