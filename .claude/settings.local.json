@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze:*)",
+      "Bash(flutter build:*)",
+      "Bash(flutter pub get:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(flutter --version:*)",
+      "Bash(flutter doctor:*)",
+      "WebFetch(domain:api.flutter.dev)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

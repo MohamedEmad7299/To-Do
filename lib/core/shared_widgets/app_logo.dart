@@ -2,7 +2,7 @@
 
 
 import 'package:flutter/material.dart';
-import '../style/text/app_texts.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppLogo extends StatelessWidget {
   final String text;
@@ -17,7 +17,11 @@ class AppLogo extends StatelessWidget {
     return Center(
       child: Text(
         text,
-        style: AppTextStyles.font48LavenderPurpleW700,
+        style: GoogleFonts.lato(
+          fontSize: 48,
+          fontWeight: FontWeight.w700,
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }
