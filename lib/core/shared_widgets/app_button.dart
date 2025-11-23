@@ -20,16 +20,18 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return SizedBox(
       width: double.infinity,
       height: 48,
       child: isOutlined
           ? OutlinedButton(
         onPressed: onPressed,
-        style: ButtonStyle(
+      style: ButtonStyle(
           side: WidgetStateProperty.all(
             BorderSide(
-              color: AppColors.lavenderPurple,
+              color: primaryColor,
               width: 1,
             ),
           ),
@@ -47,7 +49,7 @@ class AppButton extends StatelessWidget {
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             return states.contains(WidgetState.disabled)
                 ? AppColors.weakGray
-                : AppColors.lavenderPurple;
+                : primaryColor;
           }),
           shape: WidgetStateProperty.all(
             RoundedRectangleBorder(
