@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -5,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:to_do/features/bottom_nav_pages/tasks/presentation/bloc/task_bloc.dart';
 import 'package:to_do/features/bottom_nav_pages/tasks/presentation/bloc/task_event.dart';
 import 'package:to_do/generated/assets.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 import 'category_dialog.dart';
 import 'task_priority_dialog.dart';
 import 'time_picker_dialog.dart';
@@ -24,12 +26,37 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
   String? _selectedCategory;
   int? _selectedPriority;
   String? _errorMessage;
+  bool _hasTaskText = false;
+  bool _hasDescriptionText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _taskController.addListener(_onTaskTextChanged);
+    _descriptionController.addListener(_onDescriptionTextChanged);
+  }
 
   @override
   void dispose() {
+    _taskController.removeListener(_onTaskTextChanged);
+    _descriptionController.removeListener(_onDescriptionTextChanged);
     _taskController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _onTaskTextChanged() {
+    final hasText = _taskController.text.isNotEmpty;
+    if (hasText != _hasTaskText) {
+      setState(() => _hasTaskText = hasText);
+    }
+  }
+
+  void _onDescriptionTextChanged() {
+    final hasText = _descriptionController.text.isNotEmpty;
+    if (hasText != _hasDescriptionText) {
+      setState(() => _hasDescriptionText = hasText);
+    }
   }
 
   Future<void> _selectDateTime() async {
@@ -84,16 +111,17 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
   }
 
   void _addTask() {
+    final l10n = AppLocalizations.of(context)!;
     String? error;
 
     if (_taskController.text.isEmpty) {
-      error = 'Please enter a task name';
+      error = l10n.pleaseEnterTaskName;
     } else if (_selectedCategory == null) {
-      error = 'Please select a category';
+      error = l10n.pleaseSelectCategory;
     } else if (_selectedPriority == null) {
-      error = 'Please select a priority';
+      error = l10n.pleaseSelectPriority;
     } else if (_selectedDateTime == null) {
-      error = 'Please select date and time';
+      error = l10n.pleaseSelectDateTime;
     }
 
     if (error != null) {
@@ -117,8 +145,8 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
     Navigator.pop(context);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Task added successfully!'),
+      SnackBar(
+        content: Text(l10n.taskAddedSuccessfully),
         backgroundColor: Colors.green,
       ),
     );
@@ -126,6 +154,8 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFF363636),
@@ -145,9 +175,9 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Add Task',
-              style: TextStyle(
+            Text(
+              l10n.addTask,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -166,7 +196,7 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                 }
               },
               decoration: InputDecoration(
-                hintText: 'Do math homework',
+                hintText: l10n.taskNameHint,
                 hintStyle: TextStyle(
                   color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 16,
@@ -181,12 +211,18 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                   horizontal: 16,
                   vertical: 14,
                 ),
+                suffixIcon: _hasTaskText
+                    ? IconButton(
+                        icon: const Icon(Icons.highlight_remove, color: Colors.white70),
+                        onPressed: () => _taskController.clear(),
+                      )
+                    : null,
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Description',
-              style: TextStyle(
+            Text(
+              l10n.description,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
               ),
@@ -208,6 +244,12 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                   horizontal: 16,
                   vertical: 14,
                 ),
+                suffixIcon: _hasDescriptionText
+                    ? IconButton(
+                        icon: const Icon(Icons.highlight_remove, color: Colors.white70),
+                        onPressed: () => _descriptionController.clear(),
+                      )
+                    : null,
               ),
             ),
             const SizedBox(height: 16),
@@ -273,7 +315,7 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                               color: Colors.white70, size: 16),
                           const SizedBox(width: 8),
                           Text(
-                            'Priority: $_selectedPriority',
+                            '${l10n.priorityLabel}: $_selectedPriority',
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
@@ -343,10 +385,17 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                 const Spacer(),
                 IconButton(
                   onPressed: _addTask,
-                  icon: SvgPicture.asset(
-                    Assets.svgsSend,
-                    width: 24,
-                    height: 24,
+                  icon: Transform.flip(
+                    flipX: Directionality.of(context) == ui.TextDirection.rtl,
+                    child: SvgPicture.asset(
+                      Assets.svgsSend,
+                      width: 24,
+                      height: 24,
+                      colorFilter: ColorFilter.mode(
+                        Theme.of(context).colorScheme.primary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -364,11 +413,11 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
       height: 40,
       decoration: BoxDecoration(
         color: isSelected
-            ? const Color(0xFF8687E7).withValues(alpha: 0.3)
+            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(4),
         border: isSelected
-            ? Border.all(color: const Color(0xFF8687E7), width: 1)
+            ? Border.all(color: Theme.of(context).colorScheme.primary, width: 1)
             : null,
       ),
       child: IconButton(
