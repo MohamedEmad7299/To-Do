@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 
 import 'calendar_picker_dialog.dart';
 
@@ -45,6 +46,8 @@ class _TimePickerDialogState extends State<TimePickerDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Dialog(
       backgroundColor: const Color(0xFF4C4C4C),
       shape: RoundedRectangleBorder(
@@ -55,9 +58,9 @@ class _TimePickerDialogState extends State<TimePickerDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Choose Time',
-              style: TextStyle(
+            Text(
+              l10n.chooseTime,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -123,10 +126,10 @@ class _TimePickerDialogState extends State<TimePickerDialog> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text(
-                    'Cancel',
+                  child: Text(
+                    l10n.cancel,
                     style: TextStyle(
-                      color: Color(0xFF8687E7),
+                      color: Theme.of(context).colorScheme.primary,
                       fontSize: 16,
                     ),
                   ),
@@ -143,7 +146,7 @@ class _TimePickerDialogState extends State<TimePickerDialog> {
                     Navigator.pop(context, timeOfDay);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8687E7),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 32,
                       vertical: 12,
@@ -152,9 +155,9 @@ class _TimePickerDialogState extends State<TimePickerDialog> {
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
-                  child: const Text(
-                    'Save',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.save,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                     ),
@@ -211,7 +214,7 @@ class _TimePickerDialogState extends State<TimePickerDialog> {
         width: 50,
         height: 40,
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF8687E7) : const Color(0xFF3A3A3A),
+          color: isSelected ? Theme.of(context).colorScheme.primary : const Color(0xFF3A3A3A),
           borderRadius: BorderRadius.circular(4),
         ),
         alignment: Alignment.center,
