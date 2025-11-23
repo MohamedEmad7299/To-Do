@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:to_do/features/bottom_nav_pages/home/presentation/widgets/add_task_dialog.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 import '../../../../generated/assets.dart';
 import '../../calender/presentation/calender_page.dart';
 import '../../focus/presentation/focus_page.dart';
@@ -53,14 +54,14 @@ class HomeScreen extends StatelessWidget {
                     _buildNavItem(
                       context,
                       Assets.svgsTask,
-                      'Tasks',
+                      AppLocalizations.of(context)!.tasks,
                       0,
                       state.currentIndex == 0,
                     ),
                     _buildNavItem(
                       context,
                       Assets.svgsCalendar,
-                      'Calendar',
+                      AppLocalizations.of(context)!.calendar,
                       1,
                       state.currentIndex == 1,
                     ),
@@ -68,14 +69,14 @@ class HomeScreen extends StatelessWidget {
                     _buildNavItem(
                       context,
                       Assets.svgsClock,
-                      'Focus',
+                      AppLocalizations.of(context)!.focus,
                       2,
                       state.currentIndex == 2,
                     ),
                     _buildNavItem(
                       context,
                       Assets.svgsUser,
-                      'Profile',
+                      AppLocalizations.of(context)!.profile,
                       3,
                       state.currentIndex == 3,
                     ),
@@ -111,11 +112,10 @@ class HomeScreen extends StatelessWidget {
       int index,
       bool isActive,
       ) {
-    return InkWell(
+    return GestureDetector(
       onTap: () {
         context.read<HomeBloc>().add(NavigationChanged(index));
       },
-      borderRadius: BorderRadius.circular(8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
