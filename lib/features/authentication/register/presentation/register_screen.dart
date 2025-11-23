@@ -5,8 +5,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:to_do/core/shared_widgets/app_text_field.dart';
 import 'package:to_do/core/routing/routes.dart';
+import 'package:to_do/core/utils/error_localizer.dart';
 import 'package:to_do/core/validators/validator_helper.dart';
-
+import 'package:to_do/l10n/app_localizations.dart';
+import 'package:to_do/features/bottom_nav_pages/tasks/presentation/bloc/task_bloc.dart';
+import 'package:to_do/features/bottom_nav_pages/tasks/presentation/bloc/task_event.dart';
 import '../../../../core/shared_widgets/app_button.dart';
 import '../../../../core/shared_widgets/app_logo.dart';
 import '../../../../core/shared_widgets/custom_back_button.dart';
@@ -52,14 +55,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return BlocListener<RegisterBloc, RegisterState>(
       listener: (BuildContext context, RegisterState state) {
         if (state is RegisterSuccess) {
-          context.replace(Routes.home);
+          context.read<TaskBloc>().add(LoadTasksEvent());
+          context.go(Routes.home);
           bloc.add(RegisterReset());
         }
 
         if (state is RegisterError) {
+          final localizedError = ErrorLocalizer.localizeError(context, state.error);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.error),
+              content: Text(localizedError),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
             ),
@@ -85,12 +90,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const AppLogo(),
                     const SizedBox(height: 16),
                     AppTextField(
-                      label: "Email",
+                      label: AppLocalizations.of(context)!.email,
                       controller: _usernameController,
                       validator: (value) =>
                           ValidatorHelper.validateEmailAddress(value),
                       keyboardType: TextInputType.emailAddress,
-                      hintText: "Enter your username",
+                      hintText: AppLocalizations.of(context)!.enterUsername,
                     ),
                     const SizedBox(height: 8),
                     BlocBuilder<RegisterBloc, RegisterState>(
@@ -99,9 +104,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           current is PasswordHidden,
                       builder: (context, state) {
                         return AppTextField(
-                          label: "Password",
+                          label: AppLocalizations.of(context)!.password,
                           controller: _passwordController,
-                          hintText: "Enter your password",
+                          hintText: AppLocalizations.of(context)!.enterPassword,
                           validator: (value) =>
                               ValidatorHelper.validatePassword(value),
                           isPassword: true,
@@ -117,15 +122,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           current is ConfirmPasswordHidden,
                       builder: (context, state) {
                         return AppTextField(
-                          label: "Confirm Password",
+                          label: AppLocalizations.of(context)!.confirmPassword,
                           controller: _confirmPasswordController,
-                          hintText: "Repeat your password",
+                          hintText: AppLocalizations.of(context)!.repeatPassword,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please confirm your password';
+                              return AppLocalizations.of(context)!.pleaseConfirmPassword;
                             }
                             if (value != _passwordController.text) {
-                              return 'Passwords do not match';
+                              return AppLocalizations.of(context)!.passwordsDoNotMatch;
                             }
                             return null;
                           },
@@ -155,7 +160,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             builder: (context, state) {
                               final isLoading = state is RegisterLoading;
                               return AppButton(
-                                text: 'Register',
+                                text: AppLocalizations.of(context)!.registerButton,
                                 onPressed: () {
                                   if (_formKey.currentState!.validate() &&
                                       !isLoading) {
@@ -183,7 +188,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       child: SocialLoginButton(
                         iconAsset: Assets.svgsGoogle,
-                        text: 'Register with Google',
+                        text: AppLocalizations.of(context)!.registerWithGoogle,
                         onPressed: () {
                           bloc.add(GoogleSignUpRequested());
                         },
@@ -196,7 +201,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       child: SocialLoginButton(
                         iconAsset: Assets.svgsFacebook,
-                        text: 'Register with Facebook',
+                        text: AppLocalizations.of(context)!.registerWithFacebook,
                         onPressed: () {
                          bloc.add(FacebookSignUpRequested());
                         },
@@ -205,8 +210,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 24),
                     Center(
                       child: TextWithLink(
-                        normalText: "Already have an account? ",
-                        linkText: "Login",
+                        normalText: AppLocalizations.of(context)!.alreadyHaveAccount,
+                        linkText: AppLocalizations.of(context)!.loginButton,
                         onLinkTap: () => context.pop(),
                       ),
                     ),
