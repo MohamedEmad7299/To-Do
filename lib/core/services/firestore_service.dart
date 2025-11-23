@@ -147,6 +147,24 @@ class FirestoreService {
     }
   }
 
+  Future<void> deleteAllTasks() async {
+    try {
+      if (currentUserId == null) throw Exception('User not logged in');
+
+      QuerySnapshot snapshot = await _tasksCollection
+          .where('userId', isEqualTo: currentUserId)
+          .get();
+
+      WriteBatch batch = _firestore.batch();
+      for (var doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Failed to delete all tasks: $e');
+    }
+  }
+
   // ==================== AUTO-DELETE OLD COMPLETED TASKS ====================
   Future<int> deleteOldCompletedTasks() async {
     try {
