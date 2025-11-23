@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do/features/on_boarding/presentation/bloc/on_board_bloc.dart';
-
-import '../../../../core/style/colors/app_colors.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 import '../../../../core/style/text/app_texts.dart';
 
 class OnboardingControls extends StatelessWidget {
@@ -44,7 +43,7 @@ class _BackButton extends StatelessWidget {
     return TextButton(
       onPressed: onPressed,
       child: Text(
-        'BACK',
+        AppLocalizations.of(context)!.back,
         style: AppTextStyles.font16GrayW400.copyWith(
           color: onPressed == null ? Colors.grey.withValues(alpha: 0.3) : null,
         ),
@@ -65,7 +64,7 @@ class _NextButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.lavenderPurple,
+      color: Theme.of(context).colorScheme.primary,
       borderRadius: BorderRadius.circular(4),
       child: InkWell(
         onTap: onPressed,
@@ -75,7 +74,7 @@ class _NextButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Center(
             child: Text(
-              isLastPage ? 'GET STARTED' : 'NEXT',
+              isLastPage ? AppLocalizations.of(context)!.getStarted : AppLocalizations.of(context)!.next,
               style: AppTextStyles.font16White400W,
             ),
           ),
