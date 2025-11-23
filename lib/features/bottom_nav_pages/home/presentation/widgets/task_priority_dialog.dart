@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 
 class TaskPriorityDialog extends StatefulWidget {
   final int? initialPriority;
@@ -24,12 +25,14 @@ class _TaskPriorityDialogState extends State<TaskPriorityDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Dialog(
       backgroundColor: const Color(0xFF2D2D2D),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(
-          color: Color(0xFF5B7FE8),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.primary,
           width: 2,
         ),
       ),
@@ -38,10 +41,10 @@ class _TaskPriorityDialogState extends State<TaskPriorityDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Title
-            const Text(
-              'Task Priority',
-              style: TextStyle(
+
+            Text(
+              l10n.taskPriority,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -49,7 +52,7 @@ class _TaskPriorityDialogState extends State<TaskPriorityDialog> {
             ),
             const SizedBox(height: 24),
 
-            // Priority Grid
+
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -73,7 +76,7 @@ class _TaskPriorityDialogState extends State<TaskPriorityDialog> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF8B7FE8)
+                          ? Theme.of(context).colorScheme.primary
                           : const Color(0xFF3D3D3D),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -102,7 +105,7 @@ class _TaskPriorityDialogState extends State<TaskPriorityDialog> {
             ),
             const SizedBox(height: 24),
 
-            // Buttons
+
             Row(
               children: [
                 Expanded(
@@ -113,10 +116,10 @@ class _TaskPriorityDialogState extends State<TaskPriorityDialog> {
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text(
-                      'Cancel',
+                    child: Text(
+                      l10n.cancel,
                       style: TextStyle(
-                        color: Color(0xFF8B7FE8),
+                        color: Theme.of(context).colorScheme.primary,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -130,16 +133,16 @@ class _TaskPriorityDialogState extends State<TaskPriorityDialog> {
                       Navigator.of(context).pop(selectedPriority);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8B7FE8),
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.save,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -156,7 +159,7 @@ class _TaskPriorityDialogState extends State<TaskPriorityDialog> {
   }
 }
 
-// Usage Example
+
 void showTaskPriorityDialog(BuildContext context, {int? currentPriority}) async {
   final result = await showDialog<int>(
     context: context,
@@ -166,7 +169,6 @@ void showTaskPriorityDialog(BuildContext context, {int? currentPriority}) async 
   );
 
   if (result != null) {
-    // Handle the selected priority
     print('Selected priority: $result');
   }
 }
