@@ -1,7 +1,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import '../style/colors/app_colors.dart';
 import '../style/text/app_texts.dart';
 
 class SocialLoginButton extends StatelessWidget {
@@ -26,7 +25,7 @@ class SocialLoginButton extends StatelessWidget {
         style: ButtonStyle(
           side: WidgetStateProperty.all(
             BorderSide(
-              color: AppColors.lavenderPurple,
+              color: Theme.of(context).colorScheme.primary,
               width: 1,
             ),
           ),
