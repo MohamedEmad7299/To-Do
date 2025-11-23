@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 
 class CalendarPickerDialog extends StatefulWidget {
   final DateTime? initialDate;
@@ -81,6 +82,7 @@ class _CalendarPickerDialogState extends State<CalendarPickerDialog> {
   @override
   Widget build(BuildContext context) {
     final days = _getDaysInMonth();
+    final l10n = AppLocalizations.of(context)!;
 
     return Dialog(
       backgroundColor: const Color(0xFF4C4C4C),
@@ -103,7 +105,9 @@ class _CalendarPickerDialogState extends State<CalendarPickerDialog> {
                 Column(
                   children: [
                     Text(
-                      DateFormat('MMMM').format(_currentMonth).toUpperCase(),
+                      DateFormat.MMMM(Localizations.localeOf(context).toString())
+                          .format(_currentMonth)
+                          .toUpperCase(),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -111,7 +115,8 @@ class _CalendarPickerDialogState extends State<CalendarPickerDialog> {
                       ),
                     ),
                     Text(
-                      DateFormat('yyyy').format(_currentMonth),
+                      DateFormat.y(Localizations.localeOf(context).toString())
+                          .format(_currentMonth),
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 14,
@@ -132,13 +137,13 @@ class _CalendarPickerDialogState extends State<CalendarPickerDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildWeekdayHeader('SUN', false),
-                _buildWeekdayHeader('MON', false),
-                _buildWeekdayHeader('TUE', false),
-                _buildWeekdayHeader('WED', false),
-                _buildWeekdayHeader('THU', false),
-                _buildWeekdayHeader('FRI', true),
-                _buildWeekdayHeader('SAT', true),
+                _buildWeekdayHeader(l10n.sun, false),
+                _buildWeekdayHeader(l10n.mon, false),
+                _buildWeekdayHeader(l10n.tue, false),
+                _buildWeekdayHeader(l10n.wed, false),
+                _buildWeekdayHeader(l10n.thu, false),
+                _buildWeekdayHeader(l10n.fri, true),
+                _buildWeekdayHeader(l10n.sat, true),
               ],
             ),
             const SizedBox(height: 12),
@@ -168,10 +173,10 @@ class _CalendarPickerDialogState extends State<CalendarPickerDialog> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text(
-                    'Cancel',
+                  child: Text(
+                    l10n.cancel,
                     style: TextStyle(
-                      color: Color(0xFF8687E7),
+                      color: Theme.of(context).colorScheme.primary,
                       fontSize: 16,
                     ),
                   ),
@@ -181,7 +186,7 @@ class _CalendarPickerDialogState extends State<CalendarPickerDialog> {
                     Navigator.pop(context, _selectedDate);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8687E7),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 32,
                       vertical: 12,
@@ -190,9 +195,9 @@ class _CalendarPickerDialogState extends State<CalendarPickerDialog> {
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
-                  child: const Text(
-                    'Choose Time',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.chooseTime,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                     ),
@@ -235,7 +240,7 @@ class _CalendarPickerDialogState extends State<CalendarPickerDialog> {
       child: Container(
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF8687E7)
+              ? Theme.of(context).colorScheme.primary
               : const Color(0xFF3A3A3A),
           borderRadius: BorderRadius.circular(4),
         ),
