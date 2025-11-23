@@ -6,6 +6,7 @@ import 'package:to_do/features/on_boarding/presentation/bloc/on_board_bloc.dart'
 import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_indicators.dart';
 import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_content.dart';
 import 'package:to_do/features/on_boarding/presentation/widgets/onboarding_controls.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 import '../../core/routing/routes.dart';
 import '../../core/style/text/app_texts.dart';
 import 'data/onboarding_data.dart';
@@ -16,7 +17,7 @@ class OnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => OnboardingBloc(totalPages: OnboardingData.pages.length),
+      create: (_) => OnboardingBloc(totalPages: OnboardingData.getPages(context).length),
       child: const _OnboardingView(),
     );
   }
@@ -85,14 +86,14 @@ class _OnboardingViewState extends State<_OnboardingView> {
                   Expanded(
                     child: OnboardingContent(
                       pageController: _pageController,
-                      pages: OnboardingData.pages,
+                      pages: OnboardingData.getPages(context),
                       onPageChanged: _onPageChanged,
                     ),
                   ),
                   const SizedBox(height: 24),
                   OnboardingIndicators(
                     controller: _pageController,
-                    count: OnboardingData.pages.length,
+                    count: OnboardingData.getPages(context).length,
                   ),
                   const SizedBox(height: 48),
                   const OnboardingControls(),
@@ -120,7 +121,7 @@ class _SkipButton extends StatelessWidget {
       child: TextButton(
         onPressed: onSkip,
         child: Text(
-          'SKIP',
+          AppLocalizations.of(context)!.skip,
           style: AppTextStyles.font16GrayW400,
         ),
       ),
