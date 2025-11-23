@@ -1,6 +1,8 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../home/presentation/models/task_model.dart';
 import '../../home/presentation/widgets/time_picker_dialog.dart';
 import '../../home/presentation/widgets/task_priority_dialog.dart';
@@ -22,6 +24,8 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   late TextEditingController _descriptionController;
   late TaskModel _editedTask;
   bool _isEditing = false;
+  bool _hasNameText = false;
+  bool _hasDescriptionText = false;
 
   @override
   void initState() {
@@ -29,13 +33,33 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
     _editedTask = widget.task;
     _nameController = TextEditingController(text: widget.task.name);
     _descriptionController = TextEditingController(text: widget.task.description);
+    _hasNameText = _nameController.text.isNotEmpty;
+    _hasDescriptionText = _descriptionController.text.isNotEmpty;
+    _nameController.addListener(_onNameTextChanged);
+    _descriptionController.addListener(_onDescriptionTextChanged);
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_onNameTextChanged);
+    _descriptionController.removeListener(_onDescriptionTextChanged);
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _onNameTextChanged() {
+    final hasText = _nameController.text.isNotEmpty;
+    if (hasText != _hasNameText) {
+      setState(() => _hasNameText = hasText);
+    }
+  }
+
+  void _onDescriptionTextChanged() {
+    final hasText = _descriptionController.text.isNotEmpty;
+    if (hasText != _hasDescriptionText) {
+      setState(() => _hasDescriptionText = hasText);
+    }
   }
 
   void _toggleEdit() {
@@ -50,10 +74,11 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   }
 
   void _saveTask() {
+    final l10n = AppLocalizations.of(context)!;
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Task name cannot be empty'),
+        SnackBar(
+          content: Text(l10n.taskNameEmpty),
           backgroundColor: Colors.red,
         ),
       );
@@ -76,8 +101,8 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Task updated successfully'),
+      SnackBar(
+        content: Text(l10n.taskUpdatedSuccessfully),
         backgroundColor: Colors.green,
       ),
     );
@@ -149,34 +174,35 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   }
 
   void _deleteTask() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Task'),
-        content: const Text('Are you sure you want to delete this task?'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.deleteTask),
+        content: Text(l10n.deleteTaskConfirm),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              l10n.cancel,
+              style: const TextStyle(color: Colors.white),
             ),
           ),
           TextButton(
             onPressed: () {
               context.read<TaskBloc>().add(DeleteTaskEvent(_editedTask.id!));
-              Navigator.of(context).pop(); // Close dialog
+              Navigator.of(dialogContext).pop(); // Close dialog
               Navigator.of(context).pop(); // Close details screen
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Task deleted'),
+                SnackBar(
+                  content: Text(l10n.taskDeleted),
                   backgroundColor: Colors.red,
                 ),
               );
             },
             child: Text(
-              'Delete',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+              l10n.delete,
+              style: TextStyle(color: Theme.of(dialogContext).colorScheme.error),
             ),
           ),
         ],
@@ -226,6 +252,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   }
 
   AppBar _buildAppBar() {
+    final l10n = AppLocalizations.of(context)!;
     return AppBar(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
@@ -234,7 +261,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
         onPressed: () => Navigator.of(context).pop(),
       ),
       title: Text(
-        'Task Details',
+        l10n.taskDetails,
         style: Theme.of(context).textTheme.headlineSmall,
       ),
       actions: [
@@ -252,6 +279,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   }
 
   Widget _buildTaskNameField() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -262,7 +290,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Task Name',
+            l10n.taskName,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
@@ -276,9 +304,18 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                 ),
             decoration: InputDecoration(
               border: _isEditing ? const UnderlineInputBorder() : InputBorder.none,
-              contentPadding: EdgeInsets.zero,
-              hintText: 'Enter task name',
+              contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              hintText: l10n.enterTaskName,
               isDense: true,
+              suffixIcon: _isEditing && _hasNameText
+                  ? IconButton(
+                      icon: Icon(
+                        Icons.highlight_remove,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      onPressed: () => _nameController.clear(),
+                    )
+                  : null,
             ),
             maxLines: null,
           ),
@@ -288,6 +325,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   }
 
   Widget _buildDescriptionField() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -298,7 +336,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Description',
+            l10n.description,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
@@ -310,9 +348,18 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
             style: Theme.of(context).textTheme.bodyMedium,
             decoration: InputDecoration(
               border: _isEditing ? const UnderlineInputBorder() : InputBorder.none,
-              contentPadding: EdgeInsets.zero,
-              hintText: 'Enter task description',
+              contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              hintText: l10n.enterTaskDescription,
               isDense: true,
+              suffixIcon: _isEditing && _hasDescriptionText
+                  ? IconButton(
+                      icon: Icon(
+                        Icons.highlight_remove,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      onPressed: () => _descriptionController.clear(),
+                    )
+                  : null,
             ),
             maxLines: null,
             minLines: 3,
@@ -323,6 +370,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   }
 
   Widget _buildDetailsCard() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -332,28 +380,28 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
         children: [
           _buildDetailTile(
             icon: Icons.category_outlined,
-            title: 'Category',
-            value: _editedTask.tag,
+            title: l10n.category,
+            value: _editedTask.category,
             onTap: _selectCategory,
           ),
           _buildDivider(),
           _buildDetailTile(
             icon: Icons.flag_outlined,
-            title: 'Priority',
-            value: 'Priority ${_editedTask.priority}',
+            title: l10n.priority,
+            value: '${l10n.priority} ${_editedTask.priority}',
             onTap: _selectPriority,
           ),
           _buildDivider(),
           _buildDetailTile(
             icon: Icons.calendar_today_outlined,
-            title: 'Due Date',
+            title: l10n.dueDate,
             value: DateFormat('MMM dd, yyyy').format(_editedTask.dateTime),
             onTap: _selectDateTime,
           ),
           _buildDivider(),
           _buildDetailTile(
             icon: Icons.access_time_outlined,
-            title: 'Due Time',
+            title: l10n.dueTime,
             value: DateFormat('hh:mm a').format(_editedTask.dateTime),
             onTap: _selectDateTime,
           ),
@@ -363,6 +411,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   }
 
   Widget _buildStatusCard() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -376,9 +425,9 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
               _editedTask.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
               color: _editedTask.isCompleted ? Colors.green : Theme.of(context).colorScheme.primary,
             ),
-            title: const Text('Mark as Complete'),
+            title: Text(l10n.markAsComplete),
             subtitle: Text(
-              _editedTask.isCompleted ? 'Completed' : 'In Progress',
+              _editedTask.isCompleted ? l10n.completed : l10n.inProgress,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             value: _editedTask.isCompleted,
@@ -391,7 +440,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
               Icons.create_outlined,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: const Text('Created'),
+            title: Text(l10n.created),
             subtitle: Text(
               DateFormat('MMM dd, yyyy at hh:mm a').format(_editedTask.createdAt),
               style: Theme.of(context).textTheme.bodySmall,
@@ -405,7 +454,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                 Icons.check_circle_outline,
                 color: Colors.green,
               ),
-              title: const Text('Completed'),
+              title: Text(l10n.completed),
               subtitle: Text(
                 DateFormat('MMM dd, yyyy at hh:mm a').format(_editedTask.completedAt!),
                 style: Theme.of(context).textTheme.bodySmall,
@@ -449,12 +498,13 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   }
 
   Widget _buildDeleteButton() {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: _deleteTask,
         icon: const Icon(Icons.delete_outline),
-        label: const Text('Delete Task'),
+        label: Text(l10n.deleteTask),
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.red,
           side: const BorderSide(color: Colors.red),
