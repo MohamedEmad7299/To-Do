@@ -1,18 +1,21 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:to_do/core/style/colors/app_colors.dart';
 
 class AppTheme {
+
   // ============ DARK THEME ============
-  static ThemeData darkTheme() {
+  static ThemeData darkTheme({Color? primaryColor}) {
+    final Color effectivePrimaryColor = primaryColor ?? AppColors.lavenderPurple;
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
 
-      // Color Scheme
       colorScheme: ColorScheme.dark(
-        primary: AppColors.lavenderPurple,
+        primary: effectivePrimaryColor,
         secondary: AppColors.lavenderIndigo,
         surface: AppColors.onyx,
         error: Colors.red.shade400,
@@ -22,10 +25,8 @@ class AppTheme {
         onError: Colors.white,
       ),
 
-      // Scaffold
       scaffoldBackgroundColor: AppColors.nearBlack,
 
-      // AppBar
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.nearBlack,
         foregroundColor: Colors.white,
@@ -39,16 +40,14 @@ class AppTheme {
         ),
       ),
 
-      // Bottom Navigation Bar
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.onyx,
-        selectedItemColor: AppColors.lavenderPurple,
+        selectedItemColor: effectivePrimaryColor,
         unselectedItemColor: Colors.white70,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
 
-      // Card
       cardTheme: CardThemeData(
         color: AppColors.onyx,
         elevation: 0,
@@ -57,14 +56,12 @@ class AppTheme {
         ),
       ),
 
-      // Floating Action Button
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: AppColors.lavenderPurple,
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: effectivePrimaryColor,
         foregroundColor: Colors.white,
         elevation: 4,
       ),
 
-      // Dialog
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.onyx,
         shape: RoundedRectangleBorder(
@@ -81,7 +78,6 @@ class AppTheme {
         ),
       ),
 
-      // Input Decoration
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.jetBlack,
@@ -95,7 +91,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.lavenderPurple, width: 2),
+          borderSide: BorderSide(color: effectivePrimaryColor, width: 2),
         ),
         hintStyle: GoogleFonts.lato(
           color: Colors.grey.shade500,
@@ -107,7 +103,6 @@ class AppTheme {
         ),
       ),
 
-      // Text Theme
       textTheme: TextTheme(
         displayLarge: GoogleFonts.lato(
           color: Colors.white,
@@ -186,29 +181,26 @@ class AppTheme {
         ),
       ),
 
-      // Icon Theme
       iconTheme: const IconThemeData(
         color: Colors.white,
         size: 24,
       ),
 
-      // Divider
       dividerTheme: const DividerThemeData(
         color: AppColors.ashGray,
         thickness: 1,
       ),
 
-      // Switch
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppColors.lavenderPurple;
+            return effectivePrimaryColor;
           }
           return Colors.grey.shade400;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppColors.lavenderPurple.withValues(alpha: 0.5);
+            return effectivePrimaryColor.withValues(alpha: 0.5);
           }
           return Colors.grey.shade700;
         }),
