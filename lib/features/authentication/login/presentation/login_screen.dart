@@ -6,6 +6,10 @@ import 'package:go_router/go_router.dart';
 import 'package:to_do/core/shared_widgets/app_text_field.dart';
 import 'package:to_do/core/routing/routes.dart';
 import 'package:to_do/core/validators/validator_helper.dart';
+import 'package:to_do/core/utils/error_localizer.dart';
+import 'package:to_do/l10n/app_localizations.dart';
+import 'package:to_do/features/bottom_nav_pages/tasks/presentation/bloc/task_bloc.dart';
+import 'package:to_do/features/bottom_nav_pages/tasks/presentation/bloc/task_event.dart';
 import '../../../../core/shared_widgets/app_button.dart';
 import '../../../../core/shared_widgets/app_logo.dart';
 import '../../../../core/shared_widgets/custom_back_button.dart';
@@ -51,14 +55,16 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocListener<LoginBloc, LoginState>(
       listener: (BuildContext context, LoginState state) {
         if (state is LoginSuccessState) {
+          context.read<TaskBloc>().add(LoadTasksEvent());
           context.replace(Routes.home);
           context.read<LoginBloc>().add(LoginReset());
         }
 
         if (state is LoginErrorState) {
+          final localizedError = ErrorLocalizer.localizeError(context, state.error);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.error),
+              content: Text(localizedError),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
             ),
@@ -86,12 +92,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     const AppLogo(),
                     const SizedBox(height: 16),
                     AppTextField(
-                      label: "Username",
+                      label: AppLocalizations.of(context)!.email,
                       controller: _usernameController,
                       validator: (value) =>
                           ValidatorHelper.validateEmailAddress(value),
                       keyboardType: TextInputType.emailAddress,
-                      hintText: "Enter your username",
+                      hintText: AppLocalizations.of(context)!.enterUsername,
                     ),
                     const SizedBox(height: 8),
                     BlocBuilder<LoginBloc, LoginState>(
@@ -100,9 +106,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           current is PasswordHidden,
                       builder: (context, state) {
                         return AppTextField(
-                          label: "Password",
+                          label: AppLocalizations.of(context)!.password,
                           controller: _passwordController,
-                          hintText: "Enter your password",
+                          hintText: AppLocalizations.of(context)!.enterPassword,
                           validator: (value) =>
                               ValidatorHelper.validatePassword(value),
                           isPassword: true,
@@ -122,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           GestureDetector(
                             onTap: () => context.push(Routes.forgetPassword),
                             child: Text(
-                              "Forget Password ?",
+                              AppLocalizations.of(context)!.forgetPassword,
                               style: AppTextStyles.font16GrayW400,
                             ),
                           ),
@@ -141,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ]),
                         builder: (context, _) {
                           return AppButton(
-                            text: 'Login',
+                            text: AppLocalizations.of(context)!.loginButton,
                             onPressed: () {
                               if (_formKey.currentState!.validate() &&
                                   !loginBloc.isLoading) {
@@ -166,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: SocialLoginButton(
                         iconAsset: Assets.svgsGoogle,
-                        text: 'Login with Google',
+                        text: AppLocalizations.of(context)!.loginWithGoogle,
                         onPressed: () {
                           // CHANGE: Trigger Google Sign In
                           loginBloc.add(GoogleSignInRequested());
@@ -180,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: SocialLoginButton(
                         iconAsset: Assets.svgsFacebook,
-                        text: 'Login with Facebook',
+                        text: AppLocalizations.of(context)!.loginWithFacebook,
                         onPressed: () {
                           // CHANGE: Trigger Facebook Sign In
                           loginBloc.add(FacebookSignInRequested());
@@ -214,8 +220,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Center(
                       child: TextWithLink(
-                        normalText: "Don't have an account? ",
-                        linkText: "Register",
+                        normalText: AppLocalizations.of(context)!.dontHaveAccount,
+                        linkText: AppLocalizations.of(context)!.register,
                         onLinkTap: () => context.push(Routes.register),
                       ),
                     ),
