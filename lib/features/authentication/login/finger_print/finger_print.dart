@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/style/colors/app_colors.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 import '../presentation/bloc/login_bloc.dart';
 
 class FingerPrint extends StatelessWidget {
@@ -9,6 +9,8 @@ class FingerPrint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return BlocBuilder<LoginBloc, LoginState>(
       buildWhen: (previous, current) =>
       current is BiometricAvailable || current is BiometricNotAvailable,
@@ -23,7 +25,11 @@ class FingerPrint extends StatelessWidget {
             onTap: !biometricAvailable
                 ? null
                 : () {
-              bloc.add(BiometricAuthenticationRequested());
+              bloc.add(BiometricAuthenticationRequested(
+                localizedReason: AppLocalizations.of(context)!.biometricAuthReason,
+                signInTitle: AppLocalizations.of(context)!.biometricAuthTitle,
+                cancelButton: AppLocalizations.of(context)!.cancel,
+              ));
             },
             borderRadius: BorderRadius.circular(30),
             child: Center(
@@ -32,12 +38,12 @@ class FingerPrint extends StatelessWidget {
                 height: 60,
                 decoration: BoxDecoration(
                   color: biometricAvailable
-                      ? AppColors.lavenderPurple[0]
+                      ? primaryColor.withValues(alpha: 0.1)
                       : Colors.grey[200],
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: biometricAvailable
-                        ? AppColors.lavenderPurple
+                        ? primaryColor
                         : Colors.grey,
                   ),
                 ),
@@ -45,7 +51,7 @@ class FingerPrint extends StatelessWidget {
                   Icons.fingerprint,
                   size: 32,
                   color: biometricAvailable
-                      ? AppColors.lavenderPurple
+                      ? primaryColor
                       : Colors.grey,
                 ),
               ),
