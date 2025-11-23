@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:to_do/core/services/category_firestore_service.dart';
 import 'package:to_do/core/style/colors/app_colors.dart';
 import 'package:to_do/generated/assets.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 
 import '../models/category.dart';
 
@@ -37,7 +38,7 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
       isLoading = true;
     });
 
-    // Always show predefined categories
+    // Always show predefined categories (keep English names for storage/matching)
     List<CategoryItem> predefinedCategories = [
       CategoryItem(
         name: 'Grocery',
@@ -126,9 +127,10 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
         isLoading = false;
       });
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Using default categories: $e'),
+            content: Text(l10n.usingDefaultCategoriesPrefix + e.toString()),
             backgroundColor: Colors.orange,
           ),
         );
@@ -136,8 +138,37 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
     }
   }
 
+  String _translateCategoryName(String categoryName, AppLocalizations l10n) {
+    switch (categoryName) {
+      case 'Grocery':
+        return l10n.categoryGrocery;
+      case 'Work':
+        return l10n.categoryWork;
+      case 'Sport':
+        return l10n.categorySport;
+      case 'Design':
+        return l10n.categoryDesign;
+      case 'University':
+        return l10n.categoryUniversity;
+      case 'Social':
+        return l10n.categorySocial;
+      case 'Music':
+        return l10n.categoryMusic;
+      case 'Health':
+        return l10n.categoryHealth;
+      case 'Movie':
+        return l10n.categoryMovie;
+      case 'Home':
+        return l10n.categoryHome;
+      default:
+        return categoryName; // Return as-is for custom categories
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Dialog(
       backgroundColor: const Color(0xFF363636),
       shape: RoundedRectangleBorder(
@@ -149,9 +180,9 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Title
-            const Text(
-              'Choose Category',
-              style: TextStyle(
+            Text(
+              l10n.chooseCategory,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -160,7 +191,7 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
             const SizedBox(height: 8),
             // Instructions
             Text(
-              'Long press on custom categories to delete',
+              l10n.longPressToDelete,
               style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: 12,
@@ -227,8 +258,8 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
                                           child: SizedBox(
                                             width: constraints.maxWidth,
                                             child: Text(
-                                              'Create New',
-                                              style: TextStyle(
+                                              l10n.createNew,
+                                              style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w500,
@@ -294,7 +325,7 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
                                               )
                                             else
                                               Icon(
-                                                IconData(
+                                                 IconData(
                                                   int.tryParse(category.icon) ??
                                                       Icons.category.codePoint,
                                                   fontFamily: 'MaterialIcons',
@@ -310,7 +341,7 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
                                         child: SizedBox(
                                           width: constraints.maxWidth,
                                           child: Text(
-                                            category.name,
+                                            _translateCategoryName(category.name, l10n),
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 12,
@@ -348,18 +379,18 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
                 }
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.lavenderPurple,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   disabledBackgroundColor:
-                  AppColors.lavenderPurple.withValues(alpha: 0.5),
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
-                  'Add Category',
-                  style: TextStyle(
+                child: Text(
+                  l10n.addCategory,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -374,31 +405,33 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
   }
 
   Future<void> _confirmDeleteCategory(CategoryItem category) async {
+    final l10n = AppLocalizations.of(context)!;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF363636),
-        title: const Text(
-          'Delete Category',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          l10n.deleteCategory,
+          style: const TextStyle(color: Colors.white),
         ),
         content: Text(
-          'Are you sure you want to delete "${category.name}"?',
+          l10n.deleteCategoryConfirmPrefix + category.name + l10n.deleteCategoryConfirmSuffix,
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white),
+            child: Text(
+              l10n.cancel,
+              style: const TextStyle(color: Colors.white),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              l10n.delete,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -411,6 +444,8 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
   }
 
   Future<void> _deleteCategory(CategoryItem category) async {
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       // Delete from Firestore
       await _categoryService.deleteCategory(category.id!);
@@ -427,7 +462,7 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${category.name} deleted successfully!'),
+            content: Text(l10n.categoryDeletedSuccessPrefix + category.name + l10n.categoryDeletedSuccessSuffix),
             backgroundColor: Colors.green,
           ),
         );
@@ -437,7 +472,7 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to delete category: $e'),
+            content: Text(l10n.categoryDeleteFailedPrefix + e.toString()),
             backgroundColor: Colors.red,
           ),
         );
@@ -503,8 +538,8 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Category created successfully!'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.categoryCreatedSuccess),
               backgroundColor: Colors.green,
             ),
           );
@@ -523,7 +558,7 @@ class _ChooseCategoryDialogState extends State<ChooseCategoryDialog> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to create category: $e'),
+              content: Text(AppLocalizations.of(context)!.categoryCreateFailedPrefix + e.toString()),
               backgroundColor: Colors.red,
             ),
           );
@@ -563,6 +598,20 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
   final TextEditingController _nameController = TextEditingController();
   Color? selectedColor;
   IconData? selectedIcon;
+  bool _hasNameText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(_onNameTextChanged);
+  }
+
+  void _onNameTextChanged() {
+    final hasText = _nameController.text.isNotEmpty;
+    if (hasText != _hasNameText) {
+      setState(() => _hasNameText = hasText);
+    }
+  }
 
   final List<Color> availableColors = [
     const Color(0xFFCCFF80),
@@ -597,12 +646,15 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
 
   @override
   void dispose() {
+    _nameController.removeListener(_onNameTextChanged);
     _nameController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Dialog(
       backgroundColor: const Color(0xFF363636),
       shape: RoundedRectangleBorder(
@@ -614,9 +666,9 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Create New Category',
-                style: TextStyle(
+              Text(
+                l10n.createNewCategory,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -629,7 +681,7 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
                 controller: _nameController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Category name',
+                  hintText: l10n.categoryName,
                   hintStyle: TextStyle(color: Colors.grey[500]),
                   filled: true,
                   fillColor: const Color(0xFF2D2D2D),
@@ -637,6 +689,12 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
                   ),
+                  suffixIcon: _hasNameText
+                      ? IconButton(
+                          icon: const Icon(Icons.highlight_remove, color: Colors.white70),
+                          onPressed: () => _nameController.clear(),
+                        )
+                      : null,
                 ),
               ),
               const SizedBox(height: 20),
@@ -646,9 +704,9 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
                 alignment: Alignment.centerLeft,
                 child: Row(
                   children: [
-                    const Text(
-                      'Choose Color',
-                      style: TextStyle(
+                    Text(
+                      l10n.chooseColor,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
                       ),
@@ -698,9 +756,9 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
                 alignment: Alignment.centerLeft,
                 child: Row(
                   children: [
-                    const Text(
-                      'Choose Icon',
-                      style: TextStyle(
+                    Text(
+                      l10n.chooseIcon,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
                       ),
@@ -739,7 +797,7 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
                             color: isSelected && selectedColor != null
                                 ? selectedColor
                                 : isSelected
-                                ? const Color(0xFF8687E7)
+                                ? Theme.of(context).colorScheme.primary
                                 : const Color(0xFF2D2D2D),
                             shape: BoxShape.circle,
                           ),
@@ -764,9 +822,9 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.cancel,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                         ),
@@ -780,8 +838,8 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
                         // Validate all fields
                         if (_nameController.text.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Please enter a category name'),
+                            SnackBar(
+                              content: Text(l10n.pleaseEnterCategoryName),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -790,8 +848,8 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
 
                         if (selectedColor == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Please select a color'),
+                            SnackBar(
+                              content: Text(l10n.pleaseSelectColor),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -800,8 +858,8 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
 
                         if (selectedIcon == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Please select an icon'),
+                            SnackBar(
+                              content: Text(l10n.pleaseSelectIcon),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -818,15 +876,15 @@ class _CreateNewCategoryDialogState extends State<CreateNewCategoryDialog> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF8687E7),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text(
-                        'Create',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.create,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
