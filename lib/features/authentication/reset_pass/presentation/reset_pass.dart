@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:to_do/core/shared_widgets/app_text_field.dart';
 import 'package:to_do/core/validators/validator_helper.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 import '../../../../core/shared_widgets/app_button.dart';
 import '../../../../core/shared_widgets/app_logo.dart';
 import '../../../../core/shared_widgets/custom_back_button.dart';
@@ -38,14 +39,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<ResetPasswordBloc>();
+    final l10n = AppLocalizations.of(context)!;
 
     return BlocListener<ResetPasswordBloc, ResetPasswordState>(
       listener: (BuildContext context, ResetPasswordState state) {
         if (state is ResetPasswordSuccess) {
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Password reset link sent! Check your email.'),
+            SnackBar(
+              content: Text(l10n.passwordResetLinkSent),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
             ),
@@ -94,7 +96,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         horizontal: 16,
                       ),
                       child: Text(
-                        'Reset Password',
+                        l10n.resetPassword,
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -107,7 +109,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         horizontal: 16,
                       ),
                       child: Text(
-                        'Enter your email address and we\'ll send you a link to reset your password.',
+                        l10n.resetPasswordDescription,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.grey,
                         ),
@@ -115,12 +117,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     ),
                     const SizedBox(height: 32),
                     AppTextField(
-                      label: "Email",
+                      label: l10n.email,
                       controller: _emailController,
                       validator: (value) =>
                           ValidatorHelper.validateEmailAddress(value),
                       keyboardType: TextInputType.emailAddress,
-                      hintText: "Enter your email",
+                      hintText: l10n.enterUsername,
                     ),
                     const SizedBox(height: 24),
                     Padding(
@@ -135,7 +137,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         builder: (context, state) {
                           final isLoading = state is ResetPasswordLoading;
                           return AppButton(
-                            text: 'Send Reset Link',
+                            text: l10n.sendResetLink,
                             onPressed: isLoading
                                 ? null
                                 : () {
