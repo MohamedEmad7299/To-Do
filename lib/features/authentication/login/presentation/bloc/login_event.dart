@@ -5,7 +5,17 @@ sealed class LoginEvent {}
 
 final class CheckBiometricAvailability extends LoginEvent {}
 
-final class BiometricAuthenticationRequested extends LoginEvent {}
+final class BiometricAuthenticationRequested extends LoginEvent {
+  final String localizedReason;
+  final String signInTitle;
+  final String cancelButton;
+
+  BiometricAuthenticationRequested({
+    required this.localizedReason,
+    required this.signInTitle,
+    required this.cancelButton,
+  });
+}
 
 final class PasswordVisibilityChanged extends LoginEvent {
   final bool isPasswordVisible;
