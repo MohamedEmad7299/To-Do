@@ -5,19 +5,19 @@ class TaskModel {
   final String userId;
   final String name;
   final String description;
-  final String tag;
+  final String category;
   final int priority;
   final DateTime dateTime;
   final bool isCompleted;
   final DateTime createdAt;
-  final DateTime? completedAt; // NEW: Track when task was completed
+  final DateTime? completedAt;
 
   TaskModel({
     this.id,
     required this.userId,
     required this.name,
     required this.description,
-    required this.tag,
+    required this.category,
     required this.priority,
     required this.dateTime,
     this.isCompleted = false,
@@ -30,7 +30,7 @@ class TaskModel {
       'userId': userId,
       'name': name,
       'description': description,
-      'tag': tag,
+      'tag': category,
       'priority': priority,
       'dateTime': Timestamp.fromDate(dateTime),
       'isCompleted': isCompleted,
@@ -48,7 +48,7 @@ class TaskModel {
       userId: data['userId'] ?? '',
       name: data['name'] ?? '',
       description: data['description'] ?? '',
-      tag: data['tag'] ?? '',
+      category: data['tag'] ?? '',
       priority: data['priority'] ?? 1,
       dateTime: (data['dateTime'] as Timestamp).toDate(),
       isCompleted: data['isCompleted'] ?? false,
@@ -77,7 +77,7 @@ class TaskModel {
       userId: userId ?? this.userId,
       name: name ?? this.name,
       description: description ?? this.description,
-      tag: tag ?? this.tag,
+      category: tag ?? this.category,
       priority: priority ?? this.priority,
       dateTime: dateTime ?? this.dateTime,
       isCompleted: isCompleted ?? this.isCompleted,
