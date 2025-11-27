@@ -28,7 +28,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     });
 
     on<BiometricAuthenticationRequested>((event, emit) async {
-      await _handleBiometricAuthentication(emit);
+      await _handleBiometricAuthentication(event, emit);
     });
 
     on<PasswordVisibilityChanged>((event, emit) {
@@ -39,12 +39,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       await _handleLoginSubmission(event, emit);
     });
 
-    // ADD: Google Sign In Handler
     on<GoogleSignInRequested>((event, emit) async {
       await _handleGoogleSignIn(emit);
     });
 
-    // ADD: Facebook Sign In Handler
     on<FacebookSignInRequested>((event, emit) async {
       await _handleFacebookSignIn(emit);
     });
@@ -72,7 +70,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       _biometricAvailable = available;
       _biometricEnabled = enabled;
 
-      // Show fingerprint only if both available AND enabled in settings
       if (available && enabled) {
         emit(BiometricAvailable());
       } else {
@@ -86,7 +83,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     }
   }
 
-  Future<void> _handleBiometricAuthentication(Emitter<LoginState> emit) async {
+  Future<void> _handleBiometricAuthentication(
+      BiometricAuthenticationRequested event,
+      Emitter<LoginState> emit,
+      ) async {
     if (!_biometricAvailable) {
       emit(LoginErrorState('Biometric authentication not available'));
       return;
@@ -97,7 +97,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     _isLoading = true;
 
     try {
-      // First, check if there is a last user
       final hasLastUser = await _biometricService.hasLastUser();
       
       if (!hasLastUser) {
@@ -107,20 +106,18 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         return;
       }
 
-      // If there is a last user, prompt for biometric authentication
       final authenticated = await LocalAuthentication().authenticate(
-        localizedReason: 'Please authenticate to access your account',
+        localizedReason: event.localizedReason,
         persistAcrossBackgrounding: false,
-        authMessages: const <AuthMessages>[
+        authMessages: <AuthMessages>[
           AndroidAuthMessages(
-            signInTitle: 'Biometric authentication required',
-            cancelButton: 'Cancel',
+            signInTitle: event.signInTitle,
+            cancelButton: event.cancelButton,
           ),
         ],
       );
 
       if (authenticated) {
-        // If biometric authentication successful, sign in with the last user
         try {
           await _authService.signInWithBiometric();
           _isLoading = false;
@@ -234,7 +231,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(LoginInitial());
   }
 
-  // Getters for internal state
   bool get isLoading => _isLoading;
 
   bool get isPasswordVisible => _isPasswordVisible;
