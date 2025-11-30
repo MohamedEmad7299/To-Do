@@ -26,16 +26,13 @@ class StorageService {
         await profileImagesDir.create(recursive: true);
       }
 
-      // Create a file name based on user ID
       final String fileName = 'profile_$currentUserId.jpg';
       final String localPath = '${profileImagesDir.path}/$fileName';
 
-      // Copy the image file to the local directory
       final File localFile = await imageFile.copy(localPath);
 
       print('StorageService: Image saved to: $localPath');
 
-      // Save the path in shared preferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('profile_image_$currentUserId', localFile.path);
 
@@ -55,7 +52,6 @@ class StorageService {
         throw 'User not logged in';
       }
 
-      // Get the saved path from shared preferences
       final prefs = await SharedPreferences.getInstance();
       final String? imagePath = prefs.getString('profile_image_$currentUserId');
 
@@ -66,7 +62,6 @@ class StorageService {
         }
       }
 
-      // Remove the path from shared preferences
       await prefs.remove('profile_image_$currentUserId');
     } catch (e) {
       throw 'Failed to delete image: $e';

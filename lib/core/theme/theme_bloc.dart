@@ -11,7 +11,6 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   final SharedPreferences _prefs;
 
   ThemeBloc(this._prefs) : super(ThemeState.initial()) {
-    // Register event handlers
     on<LoadThemeEvent>(_onLoadTheme);
     on<ToggleThemeEvent>(_onToggleTheme);
     on<SetThemeEvent>(_onSetTheme);

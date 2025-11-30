@@ -11,7 +11,6 @@ class FirestoreService {
 
   String? get currentUserId => _auth.currentUser?.uid;
 
-  // ==================== CREATE ====================
   Future<String> addTask(TaskModel task) async {
     try {
       if (currentUserId == null) throw Exception('User not logged in');
@@ -26,7 +25,7 @@ class FirestoreService {
     }
   }
 
-  // ==================== READ ====================
+
   Stream<List<TaskModel>> getUserTasks() {
     if (currentUserId == null) {
       print('No user logged in, returning empty stream');
@@ -90,7 +89,7 @@ class FirestoreService {
     }
   }
 
-  // ==================== UPDATE ====================
+
   Future<void> updateTask(String taskId, Map<String, dynamic> updates) async {
     try {
       await _tasksCollection.doc(taskId).update(updates);

@@ -5,7 +5,6 @@ class ErrorLocalizer {
   static String localizeError(BuildContext context, String error) {
     final l10n = AppLocalizations.of(context)!;
 
-    // Biometric errors
     if (error.contains('Authentication Cancelled') ||
         error.contains('Authentication cancelled')) {
       return l10n.authenticationCancelled;
@@ -26,7 +25,6 @@ class ErrorLocalizer {
       return l10n.authenticationFailed;
     }
 
-    // Firebase Auth errors
     if (error.contains('weak-password') || error.contains('password is too weak')) {
       return l10n.weakPassword;
     }
@@ -46,7 +44,6 @@ class ErrorLocalizer {
       return l10n.tooManyAttempts;
     }
 
-    // Google Sign In errors
     if (error.contains('Google sign-in was cancelled')) {
       return l10n.googleSignInCancelled;
     }
@@ -57,7 +54,6 @@ class ErrorLocalizer {
       return l10n.googleSignInUnexpectedError;
     }
 
-    // Facebook Sign In errors
     if (error.contains('Facebook sign-in was cancelled')) {
       return l10n.facebookSignInCancelled;
     }
@@ -76,12 +72,10 @@ class ErrorLocalizer {
       return l10n.registrationError;
     }
 
-    // Login errors
     if (error.contains('error occurred during login')) {
       return l10n.loginError;
     }
 
-    // Password reset errors
     if (error.contains('Failed to send password reset email')) {
       return l10n.passwordResetFailed;
     }
@@ -89,7 +83,6 @@ class ErrorLocalizer {
       return l10n.passwordResetUnexpectedError;
     }
 
-    // Default - unexpected error
     if (error.contains('unexpected error')) {
       return l10n.unexpectedError;
     }

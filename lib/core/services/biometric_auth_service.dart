@@ -15,7 +15,6 @@ class BiometricAuthService {
   static const String _userPasswordKey = 'user_password';
   static const String _lastUserUidKey = 'last_user_uid';
 
-  // Check if device supports biometric authentication
   Future<bool> isBiometricAvailable() async {
     try {
       final bool canAuthenticateWithBiometrics = await _localAuth.canCheckBiometrics;
@@ -27,7 +26,6 @@ class BiometricAuthService {
     }
   }
 
-  // Get list of available biometric types
   Future<List<BiometricType>> getAvailableBiometrics() async {
     try {
       return await _localAuth.getAvailableBiometrics();
@@ -37,7 +35,7 @@ class BiometricAuthService {
     }
   }
 
-  // Authenticate with biometrics
+
   Future<bool> authenticate({
     String reason = 'Please authenticate to access your account',
   }) async {

@@ -84,13 +84,13 @@ class AuthService {
 
   Future<UserCredential> continueWithGoogle() async {
     try {
-      // Start listening to authentication events BEFORE calling authenticate
+
       final authEventFuture = _googleSignIn.authenticationEvents.first;
 
-      // Trigger authentication
+
       await _googleSignIn.authenticate();
 
-      // Wait for the authentication event
+
       final event = await authEventFuture;
 
       final GoogleSignInAccount? googleUser = switch (event) {

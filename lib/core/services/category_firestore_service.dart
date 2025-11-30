@@ -13,7 +13,6 @@ class CategoryFirestoreService {
 
   String? get currentUserId => _auth.currentUser?.uid;
 
-  // ==================== CREATE ====================
   Future<String> addCategory(CategoryModel category) async {
     try {
       if (currentUserId == null) throw Exception('User not logged in');
@@ -26,7 +25,7 @@ class CategoryFirestoreService {
     }
   }
 
-  // ==================== READ ====================
+
   Stream<List<CategoryModel>> getUserCategories() {
     if (currentUserId == null) {
       return Stream.value([]);
@@ -56,7 +55,6 @@ class CategoryFirestoreService {
         .toList();
   }
 
-  // ==================== UPDATE ====================
   Future<void> updateCategory(
       String categoryId, Map<String, dynamic> updates) async {
     try {
@@ -66,7 +64,6 @@ class CategoryFirestoreService {
     }
   }
 
-  // ==================== DELETE ====================
   Future<void> deleteCategory(String categoryId) async {
     try {
       await _categoriesCollection.doc(categoryId).delete();

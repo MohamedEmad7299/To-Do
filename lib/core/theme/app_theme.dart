@@ -6,7 +6,6 @@ import 'package:to_do/core/style/colors/app_colors.dart';
 
 class AppTheme {
 
-  // ============ DARK THEME ============
   static ThemeData darkTheme({Color? primaryColor}) {
     final Color effectivePrimaryColor = primaryColor ?? AppColors.lavenderPurple;
 
