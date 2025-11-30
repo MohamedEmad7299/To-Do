@@ -323,7 +323,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboarding2Description.
   ///
   /// In en, this message translates to:
-  /// **'In To-Do you can create your personalized routine to stay productive'**
+  /// **'In TO-DO you can create your personalized routine to stay productive'**
   String get onboarding2Description;
 
   /// No description provided for @onboarding3Title.
@@ -1181,7 +1181,7 @@ abstract class AppLocalizations {
   /// No description provided for @ppIntroductionText.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to To-Do App. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application. Please read this privacy policy carefully.'**
+  /// **'Welcome to TO-DO App. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application. Please read this privacy policy carefully.'**
   String get ppIntroductionText;
 
   /// No description provided for @ppInformationWeCollect.
@@ -1289,7 +1289,7 @@ abstract class AppLocalizations {
   /// No description provided for @tosAgreementText.
   ///
   /// In en, this message translates to:
-  /// **'By accessing and using To-Do App, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to these Terms of Service, please do not use our application.'**
+  /// **'By accessing and using TO-DO App, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to these Terms of Service, please do not use our application.'**
   String get tosAgreementText;
 
   /// No description provided for @tosUseLicense.
@@ -1301,7 +1301,7 @@ abstract class AppLocalizations {
   /// No description provided for @tosUseLicenseText.
   ///
   /// In en, this message translates to:
-  /// **'Permission is granted to temporarily use To-Do App for personal, non-commercial use only. This is the grant of a license, not a transfer of title, and under this license you may not:\n\n• Modify or copy the application materials\n• Use the materials for any commercial purpose\n• Attempt to decompile or reverse engineer the software\n• Remove any copyright or proprietary notations\n• Transfer the materials to another person'**
+  /// **'Permission is granted to temporarily use TO-DO App for personal, non-commercial use only. This is the grant of a license, not a transfer of title, and under this license you may not:\n\n• Modify or copy the application materials\n• Use the materials for any commercial purpose\n• Attempt to decompile or reverse engineer the software\n• Remove any copyright or proprietary notations\n• Transfer the materials to another person'**
   String get tosUseLicenseText;
 
   /// No description provided for @tosUserAccounts.

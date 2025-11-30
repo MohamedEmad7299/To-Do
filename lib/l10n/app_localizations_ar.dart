@@ -125,7 +125,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onboarding2Description =>
-      'في ToDo يمكنك إنشاء روتينك الشخصي للبقاء منتجاً';
+      'في TO-DO يمكنك إنشاء روتينك الشخصي للبقاء منتجاً';
 
   @override
   String get onboarding3Title => 'تنظيم مهامك';
