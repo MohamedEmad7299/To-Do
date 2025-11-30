@@ -1,8 +1,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do/core/services/biometric_auth_service.dart';
 import 'package:to_do/core/services/auth_service.dart';
+import 'package:to_do/core/locale/locale_bloc.dart';
+import 'package:to_do/core/locale/locale_event.dart';
+import 'package:to_do/core/locale/locale_state.dart';
+import 'package:to_do/core/services/locale_service.dart';
+import 'package:to_do/l10n/app_localizations.dart';
+import '../../tasks/presentation/bloc/task_bloc.dart';
+import '../../tasks/presentation/bloc/task_event.dart';
+import 'privacy_policy_screen.dart';
+import 'terms_of_service_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -37,7 +47,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _toggleBiometric(bool value) async {
     if (value) {
-      // User wants to enable biometric
+
       final authenticated = await _biometricService.authenticate(
         reason: 'Authenticate to enable fingerprint login',
       );
@@ -49,8 +59,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (user == null) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Please sign in first to enable fingerprint login'),
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.pleaseSignInFirst),
                 backgroundColor: Colors.red,
               ),
             );
@@ -68,8 +78,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           if (password == null || password.isEmpty) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Password is required to enable fingerprint login'),
+                SnackBar(
+                  content: Text(AppLocalizations.of(context)!.passwordRequired),
                   backgroundColor: Colors.orange,
                 ),
               );
@@ -93,8 +103,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           } catch (e) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Incorrect password. Please try again.'),
+                SnackBar(
+                  content: Text(AppLocalizations.of(context)!.incorrectPassword),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -122,8 +132,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Fingerprint login enabled'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.fingerprintEnabled),
               backgroundColor: Colors.green,
             ),
           );
@@ -131,8 +141,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Authentication failed'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.authenticationFailed),
               backgroundColor: Colors.red,
             ),
           );
@@ -147,8 +157,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Fingerprint login disabled'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.fingerprintDisabled),
             backgroundColor: Colors.orange,
           ),
         );
@@ -158,41 +168,99 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<String?> _showPasswordDialog() async {
     final controller = TextEditingController();
+    bool hasPasswordText = false;
+    bool obscurePassword = true;
 
     return showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Enter Your Password'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'To enable fingerprint login, please enter your password. It will be stored securely on your device.',
-              style: TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock_outline),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(AppLocalizations.of(dialogContext)!.enterYourPassword),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                AppLocalizations.of(dialogContext)!.passwordDialogMessage,
+                style: const TextStyle(fontSize: 14),
               ),
-              autofocus: true,
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                obscureText: obscurePassword,
+                onChanged: (value) {
+                  setState(() {
+                    hasPasswordText = value.isNotEmpty;
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(dialogContext)!.password,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  suffixIcon: hasPasswordText
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.highlight_remove,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              onPressed: () {
+                                controller.clear();
+                                setState(() {
+                                  hasPasswordText = false;
+                                });
+                              },
+                            ),
+                            Container(
+                              width: 1,
+                              height: 24,
+                              color: Colors.grey.shade400,
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  obscurePassword = !obscurePassword;
+                                });
+                              },
+                            ),
+                          ],
+                        )
+                      : IconButton(
+                          icon: Icon(
+                            obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              obscurePassword = !obscurePassword;
+                            });
+                          },
+                        ),
+                ),
+                autofocus: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: Text(AppLocalizations.of(context)!.confirm),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(null),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(controller.text),
-            child: const Text('Confirm'),
-          ),
-        ],
       ),
     );
   }
@@ -201,7 +269,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(AppLocalizations.of(context)!.settings),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => Navigator.of(context).pop(),
@@ -211,31 +279,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(16.0),
         children: [
           // Security Section
-          _buildSectionHeader(context, 'Security'),
+          _buildSectionHeader(context, AppLocalizations.of(context)!.security),
           const SizedBox(height: 8),
           _buildSecurityCard(context),
           const SizedBox(height: 24),
 
-          // Appearance Section
-          _buildSectionHeader(context, 'Appearance'),
-          const SizedBox(height: 8),
-          _buildThemeCard(context),
-          const SizedBox(height: 24),
-
-          // Notifications Section (Placeholder for future)
-          _buildSectionHeader(context, 'Notifications'),
-          const SizedBox(height: 8),
-          _buildNotificationsCard(context),
-          const SizedBox(height: 24),
-
           // General Section (Placeholder for future)
-          _buildSectionHeader(context, 'General'),
+          _buildSectionHeader(context, AppLocalizations.of(context)!.general),
           const SizedBox(height: 8),
           _buildGeneralCard(context),
           const SizedBox(height: 24),
 
           // About Section
-          _buildSectionHeader(context, 'About'),
+          _buildSectionHeader(context, AppLocalizations.of(context)!.about),
           const SizedBox(height: 8),
           _buildAboutCard(context),
         ],
@@ -271,23 +327,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!_isBiometricAvailable) {
       return Card(
         child: ListTile(
-          leading: Icon(
+          leading: const Icon(
             Icons.fingerprint,
             color: Colors.grey,
           ),
-          title: const Text('Fingerprint Login'),
-          subtitle: const Text('Not available on this device'),
+          title: Text(AppLocalizations.of(context)!.fingerprintLogin),
+          subtitle: Text(AppLocalizations.of(context)!.notAvailableOnDevice),
         ),
       );
     }
 
     return Card(
       child: SwitchListTile(
-        title: const Text('Fingerprint Login'),
+        title: Text(AppLocalizations.of(context)!.fingerprintLogin),
         subtitle: Text(
           _isBiometricEnabled
-              ? 'Use fingerprint to quickly access your account'
-              : 'Enable fingerprint authentication',
+              ? AppLocalizations.of(context)!.fingerprintDescription
+              : AppLocalizations.of(context)!.enableFingerprint,
           style: Theme.of(context).textTheme.bodySmall,
         ),
         secondary: Icon(
@@ -300,104 +356,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildThemeCard(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: Icon(
-          Icons.palette_outlined,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        title: const Text('Theme Color'),
-        subtitle: const Text('Lavender Purple (Dark Mode)'),
-        trailing: Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
-              width: 1,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildNotificationsCard(BuildContext context) {
-    return Card(
-      child: Column(
-        children: [
-          SwitchListTile(
-            title: const Text('Push Notifications'),
-            subtitle: Text(
-              'Receive task reminders',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            secondary: Icon(
-              Icons.notifications_outlined,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            value: true,
-            onChanged: (value) {
-              // TODO: Implement notifications toggle
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Notifications feature coming soon!'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-          ),
-          Divider(
-            height: 1,
-            indent: 16,
-            endIndent: 16,
-            color: Theme.of(context).dividerColor,
-          ),
-          ListTile(
-            leading: Icon(
-              Icons.schedule_outlined,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            title: const Text('Default Reminder Time'),
-            subtitle: const Text('30 minutes before'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              // TODO: Implement reminder time picker
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Reminder settings coming soon!'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildGeneralCard(BuildContext context) {
     return Card(
       child: Column(
         children: [
-          ListTile(
-            leading: Icon(
-              Icons.language_outlined,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            title: const Text('Language'),
-            subtitle: const Text('English'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              // TODO: Implement language selection
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Language selection coming soon!'),
-                  duration: Duration(seconds: 2),
+          BlocBuilder<LocaleBloc, LocaleState>(
+            builder: (context, localeState) {
+              return ListTile(
+                leading: Icon(
+                  Icons.language_outlined,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
+                title: Text(AppLocalizations.of(context)!.language),
+                subtitle: Text(LocaleService.getLocaleDisplayName(localeState.locale)),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  _showLanguageDialog(context);
+                },
               );
             },
           ),
@@ -412,8 +389,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Icons.storage_outlined,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: const Text('Clear Cache'),
-            subtitle: const Text('Free up storage space'),
+            title: Text(AppLocalizations.of(context)!.clearCache),
+            subtitle: Text(AppLocalizations.of(context)!.freeUpStorage),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               _showClearCacheDialog(context);
@@ -433,7 +410,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Icons.info_outline,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: const Text('App Version'),
+            title: Text(AppLocalizations.of(context)!.appVersion),
             subtitle: const Text('1.0.0'),
           ),
           Divider(
@@ -447,14 +424,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Icons.policy_outlined,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: const Text('Privacy Policy'),
+            title: Text(AppLocalizations.of(context)!.privacyPolicy),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
-              // TODO: Show privacy policy
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Privacy policy coming soon!'),
-                  duration: Duration(seconds: 2),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PrivacyPolicyScreen(),
                 ),
               );
             },
@@ -470,14 +446,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Icons.description_outlined,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: const Text('Terms of Service'),
+            title: Text(AppLocalizations.of(context)!.termsOfService),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
-              // TODO: Show terms of service
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Terms of service coming soon!'),
-                  duration: Duration(seconds: 2),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TermsOfServiceScreen(),
                 ),
               );
             },
@@ -490,33 +465,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showClearCacheDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear Cache'),
-        content: const Text(
-          'Are you sure you want to clear the app cache? This will not delete your tasks or data.',
+      builder: (dialogContext) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.clearAllTasks),
+        content: Text(
+          AppLocalizations.of(context)!.clearAllTasksMessage,
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              AppLocalizations.of(context)!.cancel,
+              style: const TextStyle(color: Colors.white),
             ),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              context.read<TaskBloc>().add(DeleteAllTasksEvent());
+              Navigator.of(dialogContext).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Cache cleared successfully!'),
-                  duration: Duration(seconds: 2),
+                SnackBar(
+                  content: Text(AppLocalizations.of(context)!.allTasksCleared),
+                  backgroundColor: Colors.green,
+                  duration: const Duration(seconds: 2),
                 ),
               );
             },
             child: Text(
-              'Clear',
+              AppLocalizations.of(context)!.clearAll,
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context) {
+    final currentLocale = context.read<LocaleBloc>().state.locale;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.language),
+        content: RadioGroup<Locale>(
+          groupValue: currentLocale,
+          onChanged: (Locale? value) {
+            if (value != null) {
+              context.read<LocaleBloc>().add(ChangeLocaleEvent(value));
+              Navigator.of(dialogContext).pop();
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<Locale>(
+                title: Text(AppLocalizations.of(context)!.english),
+                value: LocaleService.englishLocale,
+                activeColor: Theme.of(context).colorScheme.primary,
+              ),
+              RadioListTile<Locale>(
+                title: Text(AppLocalizations.of(context)!.arabic),
+                value: LocaleService.arabicLocale,
+                activeColor: Theme.of(context).colorScheme.primary,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
         ],
       ),
