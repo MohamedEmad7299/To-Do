@@ -7,10 +7,9 @@ abstract class TaskEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-// Load tasks
+
 class LoadTasksEvent extends TaskEvent {}
 
-// Load tasks by tag
 class LoadTasksByTagEvent extends TaskEvent {
   final String tag;
 
@@ -20,7 +19,6 @@ class LoadTasksByTagEvent extends TaskEvent {
   List<Object?> get props => [tag];
 }
 
-// Load tasks by status
 class LoadTasksByStatusEvent extends TaskEvent {
   final bool isCompleted;
 
@@ -30,7 +28,6 @@ class LoadTasksByStatusEvent extends TaskEvent {
   List<Object?> get props => [isCompleted];
 }
 
-// Add task
 class AddTaskEvent extends TaskEvent {
   final String name;
   final String description;
@@ -50,7 +47,6 @@ class AddTaskEvent extends TaskEvent {
   List<Object?> get props => [name, description, tag, priority, dateTime];
 }
 
-// Update task
 class UpdateTaskEvent extends TaskEvent {
   final String taskId;
   final Map<String, dynamic> updates;
@@ -64,7 +60,6 @@ class UpdateTaskEvent extends TaskEvent {
   List<Object?> get props => [taskId, updates];
 }
 
-// Toggle task completion
 class ToggleTaskEvent extends TaskEvent {
   final String taskId;
   final bool currentStatus;
@@ -78,7 +73,6 @@ class ToggleTaskEvent extends TaskEvent {
   List<Object?> get props => [taskId, currentStatus];
 }
 
-// Delete task
 class DeleteTaskEvent extends TaskEvent {
   final String taskId;
 
@@ -88,10 +82,10 @@ class DeleteTaskEvent extends TaskEvent {
   List<Object?> get props => [taskId];
 }
 
-// Delete all completed tasks
 class DeleteCompletedTasksEvent extends TaskEvent {}
 
-// Task stream updated (from Firestore)
+class DeleteAllTasksEvent extends TaskEvent {}
+
 class TasksUpdatedEvent extends TaskEvent {
   final List<dynamic> tasks;
 
