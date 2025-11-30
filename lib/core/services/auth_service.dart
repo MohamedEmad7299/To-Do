@@ -4,12 +4,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:to_do/core/constants/app_config.dart';
+import 'package:to_do/core/services/biometric_auth_service.dart';
 
 class AuthService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late final GoogleSignIn _googleSignIn;
   final FacebookAuth _facebookAuth = FacebookAuth.instance;
+  final BiometricAuthService _biometricService = BiometricAuthService();
 
   AuthService() {
 
@@ -56,6 +58,15 @@ class AuthService {
         email: email,
         password: password,
       );
+
+      await _biometricService.saveCredentials(
+        email: email,
+        password: password,
+      );
+      await _biometricService.saveAuthMethod(AuthMethod.email);
+      await _biometricService.saveLastUserEmail(email);
+      await _biometricService.saveLastUserUid(userCredential.user!.uid);
+
       return userCredential;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -91,7 +102,6 @@ class AuthService {
         throw 'Google sign-in was cancelled.';
       }
 
-      // Get authorization headers with required scopes
       final headers = await googleUser.authorizationClient.authorizationHeaders([
         'email',
         'profile',
@@ -103,16 +113,23 @@ class AuthService {
 
       final accessToken = headers['Authorization']?.replaceFirst('Bearer ', '');
 
-      // Get authentication details for ID token
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
-      // Create credential
+
       final credential = GoogleAuthProvider.credential(
         accessToken: accessToken,
         idToken: googleAuth.idToken,
       );
 
-      return await _auth.signInWithCredential(credential);
+      final userCredential = await _auth.signInWithCredential(credential);
+
+      if (userCredential.user?.email != null) {
+        await _biometricService.saveLastUserEmail(userCredential.user!.email!);
+        await _biometricService.saveAuthMethod(AuthMethod.google);
+        await _biometricService.saveLastUserUid(userCredential.user!.uid);
+      }
+
+      return userCredential;
     } on GoogleSignInException catch (e) {
       throw _errorMessageFromSignInException(e);
     } on FirebaseAuthException catch (e) {
@@ -124,14 +141,12 @@ class AuthService {
 
   Future<UserCredential> continueWithFacebook() async {
     try {
-      // Trigger the Facebook authentication flow
       final LoginResult result = await _facebookAuth.login(
         permissions: ['email', 'public_profile'],
       );
 
       log('Facebook login status: ${result.status}');
 
-      // Check the result status
       if (result.status == LoginStatus.success) {
         final AccessToken? accessToken = result.accessToken;
 
@@ -144,7 +159,15 @@ class AuthService {
         final OAuthCredential credential =
         FacebookAuthProvider.credential(accessToken.tokenString);
 
-        return await _auth.signInWithCredential(credential);
+        final userCredential = await _auth.signInWithCredential(credential);
+
+        if (userCredential.user?.email != null) {
+          await _biometricService.saveLastUserEmail(userCredential.user!.email!);
+          await _biometricService.saveAuthMethod(AuthMethod.facebook);
+          await _biometricService.saveLastUserUid(userCredential.user!.uid);
+        }
+
+        return userCredential;
       } else if (result.status == LoginStatus.cancelled) {
         throw 'Facebook sign-in was cancelled.';
       } else {
@@ -179,8 +202,115 @@ class AuthService {
 
   Future<void> signOut() async {
     await _auth.signOut();
-    await _googleSignIn.disconnect();
-    await _facebookAuth.logOut();
+  }
+
+  Future<UserCredential> signInWithBiometric() async {
+    try {
+      final lastUserData = await _biometricService.getLastUserData();
+      final email = lastUserData['email'];
+      final uid = lastUserData['uid'];
+      final authMethodName = lastUserData['authMethod'];
+
+      if (email == null || uid == null) {
+        throw 'No user has signed in before';
+      }
+
+      final authMethod = authMethodName != null
+          ? AuthMethod.values.firstWhere(
+              (e) => e.name == authMethodName,
+              orElse: () => AuthMethod.email,
+            )
+          : AuthMethod.email;
+
+      UserCredential userCredential;
+
+      switch (authMethod) {
+
+        case AuthMethod.email:
+
+          final credentials = await _biometricService.getCredentials();
+          if (credentials == null) {
+            throw 'Stored credentials not found';
+          }
+          userCredential = await signIn(
+            email: credentials['email']!,
+            password: credentials['password']!,
+          );
+          break;
+
+        case AuthMethod.google:
+
+          try {
+
+            final authEventFuture = _googleSignIn.authenticationEvents.first;
+
+            await _googleSignIn.authenticate();
+
+            final event = await authEventFuture;
+
+            final GoogleSignInAccount? googleUser = switch (event) {
+              GoogleSignInAuthenticationEventSignIn() => event.user,
+              GoogleSignInAuthenticationEventSignOut() => null,
+            };
+
+            if (googleUser == null) {
+              throw 'Google sign-in was cancelled.';
+            }
+
+            final headers = await googleUser.authorizationClient.authorizationHeaders([
+              'email',
+              'profile',
+            ]);
+
+            if (headers == null) {
+              throw 'Failed to get authorization headers.';
+            }
+
+            final accessToken = headers['Authorization']?.replaceFirst('Bearer ', '');
+            final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+
+            final credential = GoogleAuthProvider.credential(
+              accessToken: accessToken,
+              idToken: googleAuth.idToken,
+            );
+
+            userCredential = await _auth.signInWithCredential(credential);
+          } catch (e) {
+            log('Google authentication failed: $e');
+            throw 'Failed to sign in with Google. ${e.toString()}';
+          }
+          break;
+
+        case AuthMethod.facebook:
+
+          try {
+            final AccessToken? accessToken = await _facebookAuth.accessToken;
+
+            if (accessToken == null) {
+              throw 'Facebook session expired. Please sign in manually.';
+            }
+
+            final OAuthCredential credential =
+                FacebookAuthProvider.credential(accessToken.tokenString);
+
+            userCredential = await _auth.signInWithCredential(credential);
+          } catch (e) {
+            log('Facebook silent sign-in failed: $e');
+            throw 'Session expired. Please sign in manually with Facebook.';
+          }
+          break;
+      }
+
+      if (userCredential.user?.uid != uid) {
+        await signOut();
+        throw 'Signed in user does not match the last user';
+      }
+
+      return userCredential;
+    } catch (e) {
+      log('Error during biometric sign-in: $e');
+      rethrow;
+    }
   }
 
   String _errorMessageFromSignInException(GoogleSignInException e) {
