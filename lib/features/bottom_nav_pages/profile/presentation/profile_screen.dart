@@ -1,15 +1,124 @@
 
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:to_do/core/services/auth_service.dart';
+import 'package:to_do/core/services/firestore_service.dart';
+import 'package:to_do/core/services/storage_service.dart';
 import 'package:to_do/core/routing/routes.dart';
+import 'package:to_do/core/theme/theme_bloc.dart';
+import 'package:to_do/core/theme/theme_event.dart';
+import 'package:to_do/core/theme/theme_state.dart';
+import 'package:to_do/core/widgets/color_picker_dialog.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 import '../../../../generated/assets.dart';
 
-class ProfilePage extends StatelessWidget {
-  final AuthService _authService = AuthService();
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
 
-  ProfilePage({super.key});
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
+  final AuthService _authService = AuthService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirestoreService _firestoreService = FirestoreService();
+  final StorageService _storageService = StorageService();
+  String _displayName = 'User';
+  String? _photoUrl;
+  int _tasksLeft = 0;
+  int _tasksDone = 0;
+  StreamSubscription? _taskSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadUserData();
+    _loadTaskCounts();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadUserData();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _taskSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadUserData() async {
+    print('ProfilePage: Loading user data...');
+    final user = _auth.currentUser;
+    if (user != null) {
+      final localImagePath = await _storageService.getProfileImagePath();
+      print('ProfilePage: Local image path: $localImagePath');
+      print('ProfilePage: User photoURL: ${user.photoURL}');
+
+      setState(() {
+        _displayName = user.displayName ?? user.email?.split('@')[0] ?? 'User';
+        // Use local storage path if available, otherwise fallback to photoURL
+        _photoUrl = localImagePath ?? user.photoURL;
+        print('ProfilePage: Set _photoUrl to: $_photoUrl');
+      });
+    }
+  }
+
+  Future<void> _navigateToChangeAccountImage() async {
+    await context.push(Routes.changeAccountImage);
+    imageCache.clear();
+    imageCache.clearLiveImages();
+
+    await _auth.currentUser?.reload();
+    await _loadUserData();
+  }
+
+  void _loadTaskCounts() {
+    _taskSubscription = _firestoreService.getUserTasks().listen((tasks) {
+      if (mounted) {
+        final pendingTasks = tasks.where((task) => !task.isCompleted).length;
+        final completedTasks = tasks.where((task) => task.isCompleted).length;
+
+        setState(() {
+          _tasksLeft = pendingTasks;
+          _tasksDone = completedTasks;
+        });
+      }
+    });
+  }
+
+  Future<void> _navigateToChangeAccountName() async {
+    final result = await context.push(Routes.changeAccountName);
+    if (result == true) {
+      _loadUserData();
+    }
+  }
+
+  Future<void> _handleChangeThemeColor(BuildContext context) async {
+    final themeBloc = context.read<ThemeBloc>();
+    final currentColor = themeBloc.state.primaryColor;
+
+    final selectedColor = await showDialog<Color>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return ColorPickerDialog(currentColor: currentColor);
+      },
+    );
+
+    if (selectedColor != null && selectedColor != currentColor) {
+      themeBloc.add(ChangeThemeColorEvent(selectedColor));
+    }
+  }
 
   void _handleLogout(BuildContext context) {
     showDialog(
@@ -18,11 +127,11 @@ class ProfilePage extends StatelessWidget {
         return AlertDialog(
           backgroundColor: Theme.of(context).cardColor,
           title: Text(
-            'Logout',
+            AppLocalizations.of(context)!.logoutConfirmTitle,
             style: Theme.of(context).textTheme.titleLarge,
           ),
           content: Text(
-            'Are you sure you want to logout?',
+            AppLocalizations.of(context)!.logoutConfirmMessage,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           actions: [
@@ -30,9 +139,9 @@ class ProfilePage extends StatelessWidget {
               onPressed: () {
                 Navigator.of(dialogContext).pop();
               },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: const TextStyle(
                   color: Colors.white,
                 ),
               ),
@@ -41,7 +150,6 @@ class ProfilePage extends StatelessWidget {
               onPressed: () async {
                 Navigator.of(dialogContext).pop();
 
-                // Show loading indicator
                 showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -53,14 +161,11 @@ class ProfilePage extends StatelessWidget {
                 );
 
                 try {
-                  // Perform logout
                   await _authService.signOut();
 
-                  // Close loading indicator
                   if (context.mounted) {
                     Navigator.of(context).pop();
 
-                    // Navigate to login screen and clear navigation stack
                     context.go(Routes.login);
                   }
                 } catch (e) {
@@ -68,10 +173,9 @@ class ProfilePage extends StatelessWidget {
                   if (context.mounted) {
                     Navigator.of(context).pop();
 
-                    // Show error message
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Logout failed: ${e.toString()}'),
+                        content: Text(AppLocalizations.of(context)!.logoutFailed(e.toString())),
                         backgroundColor: Theme.of(context).colorScheme.error,
                       ),
                     );
@@ -79,7 +183,7 @@ class ProfilePage extends StatelessWidget {
                 }
               },
               child: Text(
-                'Logout',
+                AppLocalizations.of(context)!.logout,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.error,
                 ),
@@ -99,7 +203,7 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Profile',
+          AppLocalizations.of(context)!.profile,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         centerTitle: true,
@@ -114,22 +218,28 @@ class ProfilePage extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [Colors.red.shade400, Colors.blue.shade700],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: Theme.of(context).colorScheme.primary,
               ),
-              child: const Icon(Icons.person, size: 50, color: Colors.white),
+              child: ClipOval(
+                child: _photoUrl != null && _photoUrl!.isNotEmpty
+                    ? Image.file(
+                        File(_photoUrl!),
+                        key: ValueKey(_photoUrl), // Force rebuild when path changes
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          print('ProfilePage: Error loading image: $error');
+                          return const Icon(Icons.person, size: 50, color: Colors.white);
+                        },
+                      )
+                    : const Icon(Icons.person, size: 50, color: Colors.white),
+              ),
             ),
             const SizedBox(height: 16),
-            // Name
             Text(
-              'Martha Hays',
+              _displayName,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 20),
-            // Task Stats
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Row(
@@ -148,7 +258,9 @@ class ProfilePage extends StatelessWidget {
                       child: Column(
                         children: [
                           Text(
-                            '10 Task left',
+                            _tasksLeft == 1
+                                ? '$_tasksLeft ${AppLocalizations.of(context)!.tasksLeft}'
+                                : '$_tasksLeft ${AppLocalizations.of(context)!.tasksLeftPlural}',
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
@@ -170,7 +282,9 @@ class ProfilePage extends StatelessWidget {
                       child: Column(
                         children: [
                           Text(
-                            '5 Task done',
+                            _tasksDone == 1
+                                ? '$_tasksDone ${AppLocalizations.of(context)!.tasksDone}'
+                                : '$_tasksDone ${AppLocalizations.of(context)!.tasksDonePlural}',
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
@@ -181,13 +295,12 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            // Settings Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Settings',
+                  AppLocalizations.of(context)!.settings,
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
               ),
@@ -196,19 +309,29 @@ class ProfilePage extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Assets.svgsSetting,
-              title: 'App Settings',
+              title: AppLocalizations.of(context)!.appSettings,
               onTap: () {
                 context.push(Routes.settings);
               },
             ),
+            BlocBuilder<ThemeBloc, ThemeState>(
+              builder: (context, themeState) {
+                return _buildMenuItemWithColor(
+                  context: context,
+                  icon: Icons.palette,
+                  title: AppLocalizations.of(context)!.themeColor,
+                  onTap: () => _handleChangeThemeColor(context),
+                  currentColor: themeState.primaryColor,
+                );
+              },
+            ),
             const SizedBox(height: 20),
-            // Account Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Account',
+                  AppLocalizations.of(context)!.account,
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
               ),
@@ -217,29 +340,30 @@ class ProfilePage extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Assets.svgsUser,
-              title: 'Change account name',
-              onTap: () {},
+              title: AppLocalizations.of(context)!.changeAccountName,
+              onTap: _navigateToChangeAccountName,
             ),
             _buildMenuItem(
               context: context,
               icon: Assets.svgsKey,
-              title: 'Change account password',
-              onTap: () {},
+              title: AppLocalizations.of(context)!.changeAccountPassword,
+              onTap: () {
+                context.push(Routes.changePassword);
+              },
             ),
             _buildMenuItem(
               context: context,
               icon: Assets.svgsCamera,
-              title: 'Change account Image',
-              onTap: () {},
+              title: AppLocalizations.of(context)!.changeAccountImage,
+              onTap: _navigateToChangeAccountImage,
             ),
             const SizedBox(height: 20),
-            // Uptodo Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Uptodo',
+                  AppLocalizations.of(context)!.uptodo,
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
               ),
@@ -248,32 +372,40 @@ class ProfilePage extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Assets.svgsMenu,
-              title: 'About US',
-              onTap: () {},
+              title: AppLocalizations.of(context)!.aboutUs,
+              onTap: () {
+                context.push(Routes.aboutUs);
+              },
             ),
             _buildMenuItem(
               context: context,
               icon: Assets.svgsInfoCircle,
-              title: 'FAQ',
-              onTap: () {},
+              title: AppLocalizations.of(context)!.faq,
+              onTap: () {
+                context.push(Routes.faq);
+              },
             ),
             _buildMenuItem(
               context: context,
               icon: Assets.svgsFlash,
-              title: 'Help & Feedback',
-              onTap: () {},
+              title: AppLocalizations.of(context)!.helpFeedback,
+              onTap: () {
+                context.push(Routes.help);
+              },
             ),
             _buildMenuItem(
               context: context,
               icon: Assets.svgsLike,
-              title: 'Support US',
-              onTap: () {},
+              title: AppLocalizations.of(context)!.supportUs,
+              onTap: () {
+                context.push(Routes.support);
+              },
             ),
             const SizedBox(height: 12),
             _buildMenuItem(
               context: context,
               icon: Assets.svgsLogout,
-              title: 'Log out',
+              title: AppLocalizations.of(context)!.logout,
               onTap: () => _handleLogout(context),
               isDestructive: true,
             ),
@@ -329,6 +461,62 @@ class ProfilePage extends StatelessWidget {
                   color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                   size: 16,
                 ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildMenuItemWithColor({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    required Color currentColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 24,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: currentColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    width: 2,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                size: 16,
+              ),
             ],
           ),
         ),

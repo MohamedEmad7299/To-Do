@@ -15,7 +15,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
   TaskBloc({FirestoreService? firestoreService})
       : _firestoreService = firestoreService ?? FirestoreService(),
         super(TaskInitial()) {
-    // Register event handlers
+
     on<LoadTasksEvent>(_onLoadTasks);
     on<LoadTasksByTagEvent>(_onLoadTasksByTag);
     on<LoadTasksByStatusEvent>(_onLoadTasksByStatus);
@@ -24,6 +24,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     on<ToggleTaskEvent>(_onToggleTask);
     on<DeleteTaskEvent>(_onDeleteTask);
     on<DeleteCompletedTasksEvent>(_onDeleteCompletedTasks);
+    on<DeleteAllTasksEvent>(_onDeleteAllTasks);
     on<TasksUpdatedEvent>(_onTasksUpdated);
   }
 
@@ -34,7 +35,16 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
       ) async {
     emit(TaskLoading());
 
-    // Cancel Previous Subscription
+    try {
+      final deletedCount = await _firestoreService.deleteOldCompletedTasks();
+      if (deletedCount > 0) {
+        print('Auto-deleted $deletedCount old completed tasks');
+      }
+    } catch (e) {
+      print('Error auto-deleting old tasks: $e');
+    }
+
+
     await _taskSubscription?.cancel();
 
     _taskSubscription = _firestoreService.getUserTasks().listen(
@@ -47,7 +57,6 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     );
   }
 
-  // ==================== LOAD TASKS BY TAG ====================
   Future<void> _onLoadTasksByTag(
       LoadTasksByTagEvent event,
       Emitter<TaskState> emit,
@@ -66,7 +75,6 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     );
   }
 
-  // ==================== LOAD TASKS BY STATUS ====================
   Future<void> _onLoadTasksByStatus(
       LoadTasksByStatusEvent event,
       Emitter<TaskState> emit,
@@ -86,7 +94,6 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         );
   }
 
-  // ==================== TASKS UPDATED FROM STREAM ====================
   void _onTasksUpdated(
       TasksUpdatedEvent event,
       Emitter<TaskState> emit,
@@ -94,7 +101,6 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     emit(TaskLoaded(event.tasks.cast<TaskModel>()));
   }
 
-  // ==================== ADD TASK ====================
   Future<void> _onAddTask(
       AddTaskEvent event,
       Emitter<TaskState> emit,
@@ -110,7 +116,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         userId: userId,
         name: event.name,
         description: event.description,
-        tag: event.tag,
+        category: event.tag,
         priority: event.priority,
         dateTime: event.dateTime,
       );
@@ -179,6 +185,20 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
       // Stream will update automatically
     } catch (e) {
       emit(TaskError('Failed to delete completed tasks: ${e.toString()}'));
+    }
+  }
+
+  // ==================== DELETE ALL TASKS ====================
+  Future<void> _onDeleteAllTasks(
+      DeleteAllTasksEvent event,
+      Emitter<TaskState> emit,
+      ) async {
+    try {
+      await _firestoreService.deleteAllTasks();
+
+      // Stream will update automatically
+    } catch (e) {
+      emit(TaskError('Failed to delete all tasks: ${e.toString()}'));
     }
   }
 

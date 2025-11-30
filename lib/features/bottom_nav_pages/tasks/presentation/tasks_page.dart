@@ -2,9 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:to_do/l10n/app_localizations.dart';
 import '../../../../core/style/text/app_texts.dart';
 import '../../../../generated/assets.dart';
 import '../../home/presentation/models/task_model.dart';
+import '../../home/presentation/widgets/category_dialog.dart';
 import 'bloc/task_bloc.dart';
 import 'bloc/task_event.dart';
 import 'bloc/task_state.dart';
@@ -19,6 +21,7 @@ class TasksPage extends StatefulWidget {
 
 class _TasksPageState extends State<TasksPage> {
   String _sortBy = 'date'; // 'date', 'name', 'priority'
+  String? _filterByCategory; // null means show all
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +30,9 @@ class _TasksPageState extends State<TasksPage> {
       appBar: _buildAppBar(),
       body: Column(
         children: [
-          // Active Sort Display
+
           _buildActiveSortChip(),
 
-          // Tasks List
           Expanded(
             child: BlocConsumer<TaskBloc, TaskState>(
               listener: _handleBlocListener,
@@ -49,19 +51,26 @@ class _TasksPageState extends State<TasksPage> {
       centerTitle: true,
       leading: _buildSortMenu(),
       title: Text(
-        'Tasks',
+        AppLocalizations.of(context)!.tasks,
         style: Theme.of(context).textTheme.headlineSmall,
       ),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16.0),
-          child: CircleAvatar(
-            radius: 20,
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            child: Icon(
-              Icons.person,
-              color: Theme.of(context).colorScheme.onSurface,
-              size: 24,
+          child: GestureDetector(
+            onTap: _showCategoryFilterDialog,
+            child: CircleAvatar(
+              radius: 20,
+              backgroundColor: _filterByCategory != null
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.surface,
+              child: Icon(
+                Icons.label_outline,
+                color: _filterByCategory != null
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurface,
+                size: 24,
+              ),
             ),
           ),
         ),
@@ -75,16 +84,16 @@ class _TasksPageState extends State<TasksPage> {
         Icons.filter_list_sharp,
         color: Theme.of(context).colorScheme.onSurface,
       ),
-      tooltip: 'Sort by',
+      tooltip: AppLocalizations.of(context)!.sortBy,
       onSelected: (value) {
         setState(() {
           _sortBy = value;
         });
       },
       itemBuilder: (context) => [
-        _buildSortMenuItem('date', Icons.calendar_today, 'Date'),
-        _buildSortMenuItem('name', Icons.sort_by_alpha, 'Name'),
-        _buildSortMenuItem('priority', Icons.flag, 'Priority'),
+        _buildSortMenuItem('date', Icons.calendar_today, AppLocalizations.of(context)!.date),
+        _buildSortMenuItem('name', Icons.sort_by_alpha, AppLocalizations.of(context)!.name),
+        _buildSortMenuItem('priority', Icons.flag, AppLocalizations.of(context)!.priority),
       ],
     );
   }
@@ -102,13 +111,13 @@ class _TasksPageState extends State<TasksPage> {
           Icon(
             icon,
             size: 18,
-            color: isSelected ? const Color(0xFF8687E7) : Colors.grey,
+            color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey,
           ),
           const SizedBox(width: 12),
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? const Color(0xFF8687E7) : Colors.white,
+              color: isSelected ? Theme.of(context).colorScheme.primary : Colors.white,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -117,37 +126,86 @@ class _TasksPageState extends State<TasksPage> {
     );
   }
 
+  Future<void> _showCategoryFilterDialog() async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => ChooseCategoryDialog(
+        initialCategory: _filterByCategory,
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _filterByCategory = result;
+      });
+    }
+  }
+
   Widget _buildActiveSortChip() {
-    if (_sortBy == 'date') return const SizedBox.shrink();
+    final hasSort = _sortBy != 'date';
+    final hasFilter = _filterByCategory != null;
+
+    if (!hasSort && !hasFilter) return const SizedBox.shrink();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
         children: [
-          Text(
-            'Sorted by: ',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              fontSize: 14,
+          if (hasSort)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.sortedBy,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                    fontSize: 14,
+                  ),
+                ),
+                Chip(
+                  label: Text(
+                    _sortBy == 'name' ? AppLocalizations.of(context)!.nameAZ : AppLocalizations.of(context)!.priority112,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  deleteIcon: Icon(
+                    Icons.close,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  onDeleted: () {
+                    setState(() {
+                      _sortBy = 'date';
+                    });
+                  },
+                ),
+              ],
             ),
-          ),
-          Chip(
-            label: Text(
-              _sortBy == 'name' ? 'Name (A-Z)' : 'Priority (1-12)',
-              style: const TextStyle(fontSize: 12),
+          if (hasFilter)
+            Chip(
+              avatar: Icon(
+                Icons.label,
+                size: 18,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
+              label: Text(
+                _filterByCategory!,
+                style: const TextStyle(fontSize: 12),
+              ),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              deleteIcon: Icon(
+                Icons.close,
+                size: 18,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
+              onDeleted: () {
+                setState(() {
+                  _filterByCategory = null;
+                });
+              },
             ),
-            backgroundColor: const Color(0xFF8687E7),
-            deleteIcon: Icon(
-              Icons.close,
-              size: 18,
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
-            onDeleted: () {
-              setState(() {
-                _sortBy = 'date';
-              });
-            },
-          ),
         ],
       ),
     );
@@ -166,9 +224,9 @@ class _TasksPageState extends State<TasksPage> {
 
   Widget _buildBlocBuilder(BuildContext context, TaskState state) {
     if (state is TaskLoading) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
-          color: Color(0xFF8687E7),
+          color: Theme.of(context).colorScheme.primary,
         ),
       );
     }
@@ -177,15 +235,21 @@ class _TasksPageState extends State<TasksPage> {
       return _buildTasksList(state.tasks);
     }
 
-    return const Center(
+    return Center(
       child: CircularProgressIndicator(
-        color: Color(0xFF8687E7),
+        color: Theme.of(context).colorScheme.primary,
       ),
     );
   }
 
   Widget _buildTasksList(List<TaskModel> tasks) {
-    var sortedTasks = _sortTasks(tasks);
+    // Filter by category first
+    var filteredTasks = tasks;
+    if (_filterByCategory != null) {
+      filteredTasks = tasks.where((task) => task.category == _filterByCategory).toList();
+    }
+
+    var sortedTasks = _sortTasks(filteredTasks);
 
     // Split into pending and completed
     final pendingTasks =
@@ -207,9 +271,10 @@ class _TasksPageState extends State<TasksPage> {
           // Pending Section
           if (pendingTasks.isNotEmpty) ...[
             _buildSectionHeader(
+              context: context,
               icon: Icons.pending_actions,
               color: Colors.orange,
-              title: 'Pending',
+              title: AppLocalizations.of(context)!.pending,
               count: pendingTasks.length,
             ),
             const SizedBox(height: 12),
@@ -220,9 +285,10 @@ class _TasksPageState extends State<TasksPage> {
           // Completed Section
           if (completedTasks.isNotEmpty) ...[
             _buildSectionHeader(
+              context: context,
               icon: Icons.check_circle,
               color: Colors.green,
-              title: 'Completed',
+              title: AppLocalizations.of(context)!.completed,
               count: completedTasks.length,
             ),
             const SizedBox(height: 12),
@@ -242,7 +308,6 @@ class _TasksPageState extends State<TasksPage> {
     } else if (_sortBy == 'priority') {
       sortedTasks.sort((a, b) => a.priority.compareTo(b.priority));
     } else {
-      // Default: sort by date
       sortedTasks.sort((a, b) => a.dateTime.compareTo(b.dateTime));
     }
 
@@ -250,6 +315,7 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Widget _buildSectionHeader({
+    required BuildContext context,
     required IconData icon,
     required Color color,
     required String title,
@@ -285,13 +351,13 @@ class _TasksPageState extends State<TasksPage> {
             ),
             const SizedBox(height: 24),
             Text(
-              "What do you want to do today?",
+              AppLocalizations.of(context)!.whatToDoToday,
               style: AppTextStyles.font20White,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              "Tap + to add your tasks",
+              AppLocalizations.of(context)!.tapToAddTasks,
               style: AppTextStyles.font20White.copyWith(
                 color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
               ),

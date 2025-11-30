@@ -39,7 +39,7 @@ class _TaskCardState extends State<TaskCard> {
   void didUpdateWidget(TaskCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Reload if task tag changed
-    if (oldWidget.task.tag != widget.task.tag) {
+    if (oldWidget.task.category != widget.task.category) {
       _loadCategoryIfNeeded();
     }
   }
@@ -52,7 +52,7 @@ class _TaskCardState extends State<TaskCard> {
     ];
 
     final isPredefined = predefinedCategories.any(
-            (cat) => cat.toLowerCase() == widget.task.tag.toLowerCase()
+            (cat) => cat.toLowerCase() == widget.task.category.toLowerCase()
     );
 
     if (!isPredefined) {
@@ -60,7 +60,7 @@ class _TaskCardState extends State<TaskCard> {
       try {
         final categories = await _categoryService.getUserCategoriesFuture();
         print('Loaded ${categories.length} custom categories from Firestore');
-        print('Looking for category: "${widget.task.tag}"');
+        print('Looking for category: "${widget.task.category}"');
 
         // Debug: print all category names
         for (var cat in categories) {
@@ -68,12 +68,12 @@ class _TaskCardState extends State<TaskCard> {
         }
 
         final category = categories.firstWhere(
-              (cat) => cat.name.toLowerCase() == widget.task.tag.toLowerCase(),
+              (cat) => cat.name.toLowerCase() == widget.task.category.toLowerCase(),
           orElse: () {
-            print('Category "${widget.task.tag}" not found in Firestore, using fallback');
+            print('Category "${widget.task.category}" not found in Firestore, using fallback');
             return CategoryModel(
               userId: '',
-              name: widget.task.tag,
+              name: widget.task.category,
               icon: Icons.label.codePoint.toString(),
               colorValue: 0xFF8687E7,
             );
@@ -208,12 +208,12 @@ class _TaskCardState extends State<TaskCard> {
               shape: BoxShape.circle,
               border: Border.all(
                 color: widget.task.isCompleted
-                    ? const Color(0xFF8687E7)
+                    ? Theme.of(context).colorScheme.primary
                     : Colors.white,
                 width: 2,
               ),
               color: widget.task.isCompleted
-                  ? const Color(0xFF8687E7)
+                  ? Theme.of(context).colorScheme.primary
                   : Colors.transparent,
             ),
             child: widget.task.isCompleted
@@ -324,7 +324,7 @@ class _TaskCardState extends State<TaskCard> {
           // Category Name
           Flexible(
             child: Text(
-              widget.task.tag,
+              widget.task.category,
               style: AppTextStyles.font12White,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -391,7 +391,7 @@ class _TaskCardState extends State<TaskCard> {
       'home': Assets.svgsHomeTag,
     };
 
-    final iconPath = iconMap[widget.task.tag.toLowerCase()];
+    final iconPath = iconMap[widget.task.category.toLowerCase()];
 
     if (iconPath != null) {
       // Predefined category with SVG icon
@@ -446,7 +446,7 @@ class _TaskCardState extends State<TaskCard> {
       'home': const Color(0xFFFFCC80),
     };
 
-    final predefinedColor = colorMap[widget.task.tag.toLowerCase()];
+    final predefinedColor = colorMap[widget.task.category.toLowerCase()];
     if (predefinedColor != null) {
       return predefinedColor;
     }
@@ -458,8 +458,8 @@ class _TaskCardState extends State<TaskCard> {
     }
 
     // Fallback color - means the category isn't loaded yet
-    print('Using fallback color for category: ${widget.task.tag}');
-    return const Color(0xFF8687E7);
+    print('Using fallback color for category: ${widget.task.category}');
+    return Theme.of(context).colorScheme.primary;
   }
 
   Color _getPriorityColor() {
